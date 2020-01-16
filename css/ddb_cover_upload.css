@@ -1,15 +1,57 @@
-body {
-  background-color: #5f5;
-}
-
 :root {
-  --grid-colunms: 12;
+  --spacer: 1rem;
+  --color-gray-100: #f5f5f5;
 }
 
 .row {
   width: 100%;
+  border-radius: 2px;
+  padding: var(--spacer);
+  display: flex;
+}
+
+.row .col-12 {
+  width: 100%;
+  margin: var(--spacer);
 }
 
 .row .col-3 {
-  width: calc( var(--grid-columns) 100% )
+  width: 33%;
+  margin: var(--spacer);
+}
+
+.border.border-gray {
+  border: 1px solid var(--color-gray-100);
+}
+
+.center {
+  text-align: center;
+}
+
+.img-responsive {
+  max-width: 100%;
+  width: 100%;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.btn.btn-primary {
+
+}
+
+.spinner {
+  width: 100px;
+  height: 100px;
+  animation:spin 1s linear infinite;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+@keyframes spin {
+  100% {
+    transform:rotate(360deg);
+  }
 }
