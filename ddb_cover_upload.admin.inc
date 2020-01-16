@@ -101,8 +101,9 @@ function ddb_cover_upload_form($form, &$form_state) {
   // Call the function named in $form_state['step_information'] to get the
   // form elements to display for this step.
   $form = $form_state['step_information'][$step]['form']($form, $form_state);
+  // Attach assets to form.
+  $form['#attached']['css'][] = drupal_get_path('module', 'ddb_cover_upload') . '/css/ddb_cover_upload.css';
   drupal_set_title(_ddb_cover_upload_get_title($step, $form_state));
-  //drupal_set_title(t('Upload cover: Step @step - @step_title', array('@step' => $step, '@step_title' => $form_state['step_information'][$step]['step_title'])));
 
   // Show the 'previous' button if appropriate. Note that #submit is set to
   // a special submit handler, and that we use #limit_validation_errors to
@@ -136,7 +137,7 @@ function ddb_cover_upload_form($form, &$form_state) {
     // ddb_cover_upload_submit handler will be called.
     $form['finish'] = array(
       '#type' => 'submit',
-      '#value' => t('Add image'),
+      '#value' => t('Upload image to cover service'),
     );
   }
 
@@ -311,6 +312,7 @@ function ddb_cover_upload_image_upload($form, &$form_state) {
  */
 function ddb_cover_upload_meta($form, &$form_state) {
   $form = array();
+
   $form['ddb_cover_upload_meta'] = array(
     '#type' => 'container',
     '#attributes' => array(
@@ -329,11 +331,22 @@ function ddb_cover_upload_meta($form, &$form_state) {
       'class' => array('right')
     ),
   );
+  // Add uploaded file to template.
+  $uploaded = file_load($form_state['input']['ddb_cover_upload_image']['fid']);
   $form['ddb_cover_upload_meta']['left']['ddb_cover_upload_meta_left'] = array(
-    '#markup' => theme('ddb_cover_upload_meta_left', array())
+    '#markup' => theme('ddb_cover_upload_meta_left', array(
+        'image' => theme('image_style', array('style_name' => 'large', 'path' => $uploaded->uri))
+      )
+    )
   );
   $form['ddb_cover_upload_meta']['right']['ddb_cover_upload_meta_data'] = array(
-    '#markup' => theme('ddb_cover_upload_meta_data', array())
+    '#markup' => theme('ddb_cover_upload_meta_data', array(
+      'file_data' => $uploaded,
+      'meta_data' => array (
+        'file_size' => array ('x' => 500, 'y' => 1000),
+        'author' => 'Aarhus Kommunes Bibilioteker',
+      ),
+    )),
   );
   $form['ddb_cover_upload_meta']['right']['ddb_cover_upload_meta_input'] = array(
     '#type' => 'textfield',
@@ -439,6 +452,11 @@ function _ddb_cover_upload_return_bytes($val) {
 
 function ddb_cover_upload_submitted() {
   return array(
+    '#attached' => array (
+      'css' => array(
+        drupal_get_path('module', 'ddb_cover_upload') . '/css/ddb_cover_upload.css',
+      ),
+    ),
     '#markup' => theme('ddb_cover_upload_submitted', array())
   );
 }

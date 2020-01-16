@@ -64,12 +64,12 @@ function ddb_cover_upload_theme($existing, $type, $theme, $path) {
       'path' => $path . '/templates/'
     ),
     'ddb_cover_upload_meta_left' => array(
-      'variables' => array(),
+      'variables' => array('image' => NULL),
       'template' => 'ddb-cover-upload-meta-left',
       'path' => $path . '/templates/'
     ),
     'ddb_cover_upload_meta_data' => array(
-      'variables' => array(),
+      'variables' => array('file_data' => NULL, 'meta_data' => NULL),
       'template' => 'ddb-cover-upload-meta-data',
       'path' => $path . '/templates/'
     ),
