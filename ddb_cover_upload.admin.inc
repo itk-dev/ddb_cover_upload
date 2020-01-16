@@ -6,6 +6,7 @@
  */
 
 /**
+ * @todo Remove these comments.
  * Extensible wizard form example.
  *
  * This is an example of a multistep form using a wizard style. It will include
@@ -381,27 +382,8 @@ function ddb_cover_upload_form_submit($form, &$form_state) {
   $current_step = &$form_state['step'];
   $form_state['step_information'][$current_step]['stored_values'] = $form_state['values'];
   $form_state['redirect'] = '/admin/config/cover_upload/submitted';
-  // In this case we've completed the final page of the wizard, so process the
-  // submitted information.
-  drupal_set_message(t('This information was collected by this wizard:'));
-  foreach ($form_state['step_information'] as $index => $value) {
-    // Remove FAPI fields included in the values (form_token, form_id and
-    // form_build_id. This is not required, you may access the values using
-    // $value['stored_values'] but I'm removing them to make a more clearx
-    // representation of the collected information as the complete array will
-    // be passed through drupal_set_message().
-    unset($value['stored_values']['form_id']);
-    unset($value['stored_values']['form_build_id']);
-    unset($value['stored_values']['form_token']);
 
-    // Now show all the values.
-    drupal_set_message(t('Step @num collected the following values: <pre>@result</pre>',
-      array(
-        '@num' => $index,
-        '@result' => print_r($value['stored_values'], TRUE),
-      )
-    ));
-  }
+  // @todo Call upload service.
 }
 
 /**
