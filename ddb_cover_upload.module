@@ -85,11 +85,3 @@ function ddb_cover_upload_theme($existing, $type, $theme, $path) {
     ),
   );
 }
-
-/**
- * Implements hook_preprocess_page().
- */
-function ddb_cover_upload_preprocess_page(&$variables) {
-  $module_path = drupal_get_path('module', 'ddb_cover_upload');
-  drupal_add_css($module_path . '/css/ddb_cover_upload.css');
-}
