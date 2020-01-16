@@ -1,0 +1,15 @@
+body {
+  background-color: #5f5;
+}
+
+:root {
+  --grid-colunms: 12;
+}
+
+.row {
+  width: 100%;
+}
+
+.row .col-3 {
+  width: calc( var(--grid-columns) 100% )
+}
