@@ -36,6 +36,19 @@ function ddb_cover_upload_menu() {
     'access arguments' => array('upload cover'),
     'file' => 'ddb_cover_upload.admin.inc',
   );
+  $items['admin/config/cover_upload/upload/new'] = array(
+    'title' => 'Upload cover to cover service',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0,
+  );
+  $items['admin/config/cover_upload/upload/list'] = array(
+    'title' => 'List uploaded covers',
+    'page callback' => 'ddb_cover_upload_list',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1,
+    'access arguments' => array('upload cover'),
+    'file' => 'ddb_cover_upload.admin.inc',
+  );
 
   return $items;
 }
@@ -51,6 +64,9 @@ function ddb_cover_upload_permission() {
   );
 }
 
+/**
+ * Implements hook_theme().
+ */
 function ddb_cover_upload_theme($existing, $type, $theme, $path) {
   return array(
     'ddb_cover_upload_conditions' => array(

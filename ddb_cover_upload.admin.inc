@@ -2,10 +2,11 @@
 
 /**
  * @file
- * Upload cover form.
+ * Admin interface for handling uploads to cover service.
  */
 
 /**
+ * @todo Remove these comments.
  * Extensible wizard form example.
  *
  * This is an example of a multistep form using a wizard style. It will include
@@ -35,14 +36,9 @@
 /**
  * Returns the list of steps and their associated forms.
  *
- * This has been separated to clarify and easy the understanding of this
- * example. You should edit this function to include the steps your
- * wizard/multistep form requires.
- *
  * @return array
  *   List of steps and their forms.
  *
- * @ingroup form_example
  */
 function _ddb_cover_upload_form_steps() {
   return array(
@@ -66,11 +62,9 @@ function _ddb_cover_upload_form_steps() {
 }
 
 /**
- * The primary formbuilder function for the wizard form.
+ * The primary formbuilder for the multistep form.
  *
- * This is the form that you should call with drupal_get_form() from your code,
- * and it will include the rest of the step forms defined. You are not required
- * to change this function, as this will handle all the step actions for you.
+ * This will include the rest of the form steps defined.
  *
  * This form has two defined submit handlers to process the different steps:
  *  - Previous: handles the way to get back one step in the wizard.
@@ -79,17 +73,19 @@ function _ddb_cover_upload_form_steps() {
  * The third handler, the finish button handler, is the default form_submit
  * handler used to process the information.
  *
- * You are not required to change the next or previous handlers, but you must
- * change the ddb_cover_upload_submit handler to perform the operations you
- * need on the collected information.
+ * @param $form
+ *   The form element.
+ * @param $form_state
+ *   The state of the form.
  *
- * @ingroup form_example
+ * @return mixed
+ *   The full form including all steps.
  */
 function ddb_cover_upload_form($form, &$form_state) {
   global $user;
   // Initialize a description of the steps for the wizard.
   if (empty($form_state['step'])) {
-    _ddb_cover_upload_define_step($user, drupal_get_query_parameters(),$form_state);
+    _ddb_cover_upload_determine_step($user, drupal_get_query_parameters(),$form_state);
 
     // This array contains the function to be called at each step to get the
     // relevant form elements. It will also store state information for each
@@ -103,10 +99,11 @@ function ddb_cover_upload_form($form, &$form_state) {
   $form = $form_state['step_information'][$step]['form']($form, $form_state);
   // Attach assets to form.
   $form['#attached']['css'][] = drupal_get_path('module', 'ddb_cover_upload') . '/css/ddb_cover_upload.css';
+
+  // Set title for step.
   drupal_set_title(_ddb_cover_upload_get_title($step, $form_state));
 
-  // Show the 'previous' button if appropriate. Note that #submit is set to
-  // a special submit handler, and that we use #limit_validation_errors to
+  // We use #limit_validation_errors to
   // skip all complaints about validation when using the back button. The
   // values entered will be discarded, but they will not be validated, which
   // would be annoying in a "back" button.
@@ -122,7 +119,6 @@ function ddb_cover_upload_form($form, &$form_state) {
 
   // Show the Next button only if there are more steps defined.
   if ($step < count($form_state['step_information']) -1) {
-    // The Next button should be included on every step.
     $form['next'] = array(
       '#type' => 'submit',
       '#value' => t('Next'),
@@ -131,10 +127,6 @@ function ddb_cover_upload_form($form, &$form_state) {
     );
   }
   else {
-    // Just in case there are no more steps, we use the default submit handler
-    // of the form wizard. Call this button Finish, Submit, or whatever you
-    // want to show. When this button is clicked, the
-    // ddb_cover_upload_submit handler will be called.
     $form['finish'] = array(
       '#type' => 'submit',
       '#value' => t('Upload image to cover service'),
@@ -158,9 +150,10 @@ function ddb_cover_upload_form($form, &$form_state) {
  * - Replaces $form_state['values'] with the values from the previous state.
  * - Forces form rebuild.
  *
- * You are not required to change this function.
- *
- * @ingroup form_example
+ * @param $form
+ *   The form element.
+ * @param $form_state
+ *   The state of the form.
  */
 function ddb_cover_upload_previous_submit($form, &$form_state) {
   $current_step = &$form_state['step'];
@@ -184,9 +177,10 @@ function ddb_cover_upload_previous_submit($form, &$form_state) {
  *   or with array() if we haven't been here before.
  * - Force form rebuild.
  *
- * You are not required to change this function.
- *
- * @ingroup form_example
+ * @param $form
+ *   The form element.
+ * @param $form_state
+ *   The state of the form.
  */
 function ddb_cover_upload_next_submit($form, &$form_state) {
   $current_step = &$form_state['step'];
@@ -207,11 +201,18 @@ function ddb_cover_upload_next_submit($form, &$form_state) {
 }
 
 /**
+ * Accept terms of use of the form.
+ *
  * @param $form
+ *   The form element.
  * @param $form_state
+ *   The state of the form.
  *
  * @return array
+ *   The form for displaying and accepting terms of use.
+ *
  * @throws \Exception
+ *   Theme exception error.
  */
 function ddb_cover_upload_conditions($form, &$form_state) {
   $form = array();
@@ -228,6 +229,8 @@ function ddb_cover_upload_conditions($form, &$form_state) {
 }
 
 /**
+ * Select ting material step of the form.
+ *
  * @param $form
  *   The form element.
  * @param $form_state
@@ -250,6 +253,8 @@ function ddb_cover_upload_material($form, &$form_state) {
 }
 
 /**
+ * Validation for "Select ting material" step.
+ *
  * @param $form
  *   The form element.
  * @param $form_state
@@ -262,6 +267,8 @@ function ddb_cover_upload_material_validate($form, &$form_state) {
 }
 
 /**
+ * Image upload step of the form.
+ *
  * @param $form
  *   The form element.
  * @param $form_state
@@ -297,8 +304,9 @@ function ddb_cover_upload_image_upload($form, &$form_state) {
   return $form;
 }
 
-
 /**
+ * Meta data step of the form.
+ *
  * @param $form
  *   The form element.
  * @param $form_state
@@ -363,48 +371,32 @@ function ddb_cover_upload_meta($form, &$form_state) {
 }
 
 /**
- * Wizard form submit handler.
+ * Multistep form submit handler for cover upload.
  *
- * This function:
- * - Saves away $form_state['values']
- * - Process all the form values.
- *
- * And now comes the magic of the wizard, the function that should handle all
- * the inputs from the user on each different step.
- *
- * This demonstration handler just do a drupal_set_message() with the
- * information collected on each different step of the wizard.
- *
- * @ingroup form_example
+ * @param $form
+ *   The form element.
+ * @param $form_state
+ *   The state of the form.
  */
 function ddb_cover_upload_form_submit($form, &$form_state) {
   $current_step = &$form_state['step'];
   $form_state['step_information'][$current_step]['stored_values'] = $form_state['values'];
   $form_state['redirect'] = '/admin/config/cover_upload/submitted';
-  // In this case we've completed the final page of the wizard, so process the
-  // submitted information.
-  drupal_set_message(t('This information was collected by this wizard:'));
-  foreach ($form_state['step_information'] as $index => $value) {
-    // Remove FAPI fields included in the values (form_token, form_id and
-    // form_build_id. This is not required, you may access the values using
-    // $value['stored_values'] but I'm removing them to make a more clear
-    // representation of the collected information as the complete array will
-    // be passed through drupal_set_message().
-    unset($value['stored_values']['form_id']);
-    unset($value['stored_values']['form_build_id']);
-    unset($value['stored_values']['form_token']);
 
-    // Now show all the values.
-    drupal_set_message(t('Step @num collected the following values: <pre>@result</pre>',
-      array(
-        '@num' => $index,
-        '@result' => print_r($value['stored_values'], TRUE),
-      )
-    ));
-  }
+  // @todo Call upload service.
 }
 
-function _ddb_cover_upload_define_step($user, $query, &$form_state) {
+/**
+ * Determine starting step when opening form.
+ *
+ * @param $user
+ *   The active user.
+ * @param $query
+ *   The query parameters.
+ * @param $form_state
+ *   The state of the form.
+ */
+function _ddb_cover_upload_determine_step($user, $query, &$form_state) {
   $form_state['step'] = 0;
   // @todo Bypass step 1 if user has already accepted conditions.
   if ($user) {
@@ -415,9 +407,20 @@ function _ddb_cover_upload_define_step($user, $query, &$form_state) {
       $form_state['step'] = 2;
     }
   }
+  // @todo remove this.
   $form_state['step'] = 0;
 }
 
+/**
+ * Get a title for the form step.
+ *
+ * @param $step
+ *   Display title depending on steps.
+ * @param $form_state
+ *   The state of the form.
+ * @return array|mixed|string|null
+ *   The title to display.
+ */
 function _ddb_cover_upload_get_title($step, $form_state) {
   if ($step == 0) {
     $title = t('Upload cover: @step_title', array('@step_title' => $form_state['step_information'][$step]['step_title']));
@@ -428,12 +431,20 @@ function _ddb_cover_upload_get_title($step, $form_state) {
   return $title;
 }
 
+/**
+ * Translate file size values from strings calculated bytes.
+ *
+ * @param $val
+ *   A string representation of file sizes.
+ *
+ * @return float|int|string
+ *   A calculated value of bytes.
+ */
 function _ddb_cover_upload_return_bytes($val) {
   $val = trim($val);
   $last = strtolower($val[strlen($val)-1]);
   $val = intval($val);
   switch($last) {
-    // The 'G' modifier is available since PHP 5.1.0
     case 'g':
       $val *= 1024*1024*1024;
       break;
@@ -450,6 +461,14 @@ function _ddb_cover_upload_return_bytes($val) {
   return $val;
 }
 
+/**
+ * Display cover submitted page.
+ *
+ * @return array
+ *   A themed page.
+ * @throws \Exception
+ *   Theme exception error.
+ */
 function ddb_cover_upload_submitted() {
   return array(
     '#attached' => array (
@@ -458,5 +477,28 @@ function ddb_cover_upload_submitted() {
       ),
     ),
     '#markup' => theme('ddb_cover_upload_submitted', array())
+  );
+}
+
+/**
+ * Display list of covers uploaded by the library.
+ *
+ * @return array
+ *   A themed list.
+ * @throws \Exception
+ *   Theme exception error.
+ */
+function ddb_cover_upload_list() {
+  $header = array(
+    t('Image'),
+    t('Material'),
+    t('Actions')
+  );
+  $rows = array();
+  return array(
+    '#markup' => theme('table', array(
+      'header' => $header,
+      'rows' => $rows,
+    ))
   );
 }
