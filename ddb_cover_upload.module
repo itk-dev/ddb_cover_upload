@@ -1,0 +1,87 @@
+<?php
+
+/**
+ * @file
+ * Enables option to upload covers to cover service.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function ddb_cover_upload_menu() {
+  $items['admin/config/cover_upload'] = array(
+    'title' => 'Cover service',
+    'description' => 'Upload an image to cover service.',
+    'position' => 'left',
+    'weight' => 0,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('upload cover'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  );
+
+  $items['admin/config/cover_upload/upload'] = array(
+    'title' => 'Upload cover to cover service',
+    'description' => 'Upload an image to cover service.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ddb_cover_upload_form'),
+    'access arguments' => array('upload cover'),
+    'file' => 'ddb_cover_upload.admin.inc',
+  );
+  $items['admin/config/cover_upload/submitted'] = array(
+    'type' => MENU_CALLBACK,
+    'title' => 'Communicating with cover service',
+    'description' => 'Communicating with cover service.',
+    'page callback' => 'ddb_cover_upload_submitted',
+    'access arguments' => array('upload cover'),
+    'file' => 'ddb_cover_upload.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function ddb_cover_upload_permission() {
+  return array(
+    'upload cover' => array(
+      'title' => t('Upload cover to cover service'),
+    ),
+  );
+}
+
+function ddb_cover_upload_theme($existing, $type, $theme, $path) {
+  return array(
+    'ddb_cover_upload_conditions' => array(
+      'variables' => array(),
+      'template' => 'ddb-cover-upload-conditions',
+      'path' => $path . '/templates/'
+    ),
+    'ddb_cover_upload_best_result' => array(
+      'variables' => array(),
+      'template' => 'ddb-cover-upload-best-result',
+      'path' => $path . '/templates/'
+    ),
+    'ddb_cover_upload_meta_left' => array(
+      'variables' => array(),
+      'template' => 'ddb-cover-upload-meta-left',
+      'path' => $path . '/templates/'
+    ),
+    'ddb_cover_upload_meta_data' => array(
+      'variables' => array(),
+      'template' => 'ddb-cover-upload-meta-data',
+      'path' => $path . '/templates/'
+    ),
+    'ddb_cover_upload_meta_copyright' => array(
+      'variables' => array(),
+      'template' => 'ddb-cover-upload-meta-copyright',
+      'path' => $path . '/templates/'
+    ),
+    'ddb_cover_upload_submitted' => array(
+      'variables' => array(),
+      'template' => 'ddb-cover-upload-submitted',
+      'path' => $path . '/templates/'
+    ),
+  );
+}
