@@ -343,7 +343,13 @@ function ddb_cover_upload_meta($form, &$form_state) {
   $uploaded = file_load($form_state['input']['ddb_cover_upload_image']['fid']);
   $form['ddb_cover_upload_meta']['left']['ddb_cover_upload_meta_left'] = array(
     '#markup' => theme('ddb_cover_upload_meta_left', array(
-        'image' => theme('image_style', array('style_name' => 'large', 'path' => $uploaded->uri))
+        'image' => theme('image_style', array(
+          'style_name' => 'large',
+          'path' => $uploaded->uri,
+          'attributes' => array (
+            'class' => 'img-responsive',
+          )
+        ))
       )
     )
   );
@@ -489,6 +495,7 @@ function ddb_cover_upload_submitted() {
  *   Theme exception error.
  */
 function ddb_cover_upload_list() {
+  drupal_set_title(t('List uploaded covers'));
   $header = array(
     t('Image'),
     t('Material'),
