@@ -98,7 +98,18 @@ function ddb_cover_upload_form($form, &$form_state) {
   // form elements to display for this step.
   $form = $form_state['step_information'][$step]['form']($form, $form_state);
   // Attach assets to form.
-  $form['#attached']['css'][] = drupal_get_path('module', 'ddb_cover_upload') . '/css/ddb_cover_upload.css';
+  $form['#attached'] = array (
+    'css' => array (
+      drupal_get_path('module', 'ddb_cover_upload') . '/css/ddb_cover_upload.css'
+    ),
+    'library' => array(
+      array('system', 'ui.dialog'),
+    ),
+    'js' => array(
+      drupal_get_path('module', 'ddb_cover_upload') . '/js/ddb_cover_upload_dialog.js'
+    )
+  );
+
 
   // Set title for step.
   drupal_set_title(_ddb_cover_upload_get_title($step, $form_state));
@@ -216,8 +227,12 @@ function ddb_cover_upload_next_submit($form, &$form_state) {
  */
 function ddb_cover_upload_conditions($form, &$form_state) {
   $form = array();
+  $no_terms_set = t('[Contact DDB for copyright information and change module settings]');
+  $terms = variable_get('ddb_cover_upload_terms_of_use')['value'];
   $form['ddb_cover_upload_conditions'] = array(
-    '#markup' => theme('ddb_cover_upload_conditions', array())
+    '#markup' => theme('ddb_cover_upload_conditions', array(
+      'copyright_text' => empty($terms) ? $no_terms_set : $terms
+    ))
   );
 
   $form['ddb_cover_upload_confirm'] = array(
@@ -246,6 +261,7 @@ function ddb_cover_upload_material($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Material'),
     '#description' => t('Hint: Lorem ipsum.'),
+    '#autocomplete_path' => 'cover_upload/ting_reference/autocomplete',
     '#required' => TRUE,
     '#default_value' => !empty($form_state['values']['material']) ? $form_state['values']['material'] : '',
   );
@@ -355,6 +371,7 @@ function ddb_cover_upload_meta($form, &$form_state) {
   );
   $form['ddb_cover_upload_meta']['right']['ddb_cover_upload_meta_data'] = array(
     '#markup' => theme('ddb_cover_upload_meta_data', array(
+      'material' => ding_entity_load($form_state['step_information'][1]['stored_values']['ddb_cover_upload_material']),
       'file_data' => $uploaded,
       'meta_data' => array (
         'file_size' => array ('x' => 500, 'y' => 1000),
@@ -369,8 +386,12 @@ function ddb_cover_upload_meta($form, &$form_state) {
     '#size' => 60,
     '#maxlength' => 128,
   );
+  $no_terms_set = t('[Contact DDB for copyright information and change module settings]');
+  $terms = variable_get('ddb_cover_upload_terms_of_use')['value'];
   $form['ddb_cover_upload_meta']['right']['ddb_cover_upload_meta_copyright'] = array(
-    '#markup' => theme('ddb_cover_upload_meta_copyright', array())
+    '#markup' => theme('ddb_cover_upload_meta_copyright', array(
+      'copyright_text' => empty($terms) ? $no_terms_set : $terms
+    ))
   );
 
   return $form;
@@ -508,4 +529,31 @@ function ddb_cover_upload_list() {
       'rows' => $rows,
     ))
   );
+}
+
+/**
+ * Cover upload settings form.
+ *
+ * @param array $form
+ *   Form structure.
+ * @param array $form_state
+ *   Form state values.
+ *
+ * @return array
+ *   Form structure prepared for admin settings.
+ */
+function ddb_cover_upload_settings_form($form, $form_state) {
+  $form['settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Cover upload settings'),
+  );
+
+  $form['settings']['ddb_cover_upload_terms_of_use'] = array(
+    '#type' => 'text_format',
+    '#title' => t('Terms of use'),
+    '#default_value' => variable_get('ddb_cover_upload_terms_of_use')['value'],
+    '#text_format' => 'ding_wysiwyg',
+  );
+
+  return system_settings_form($form);
 }

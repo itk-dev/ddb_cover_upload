@@ -1,9 +1,15 @@
 <div>
-  <h3><?php print 'Copyright information';?></h3>
+  <h3><?php print t('Copyright information');?></h3>
   <p>
-    Det er dit ansvar at sørge for at alle rettighederne for brug af dette billede er overholdt.
+    <?php print t('It is your responsibility to make sure that all rights for use of this image are upheld');?>
   </p>
   <p>
-    <div>Se her hvilke regler der gælder:</div>
-    <a href="#" target="_blank">Betingelser for brug af Forside Service</a></p>
+    <div><?php print t('See what rules apply'); ?>:</div>
+    <a href="#" class="opener-modal" data-dialog="dialog-copyright"><?php print t('Conditions for use of cover service'); ?></a>
+  </p>
+</div>
+<div tabindex="-1" role="dialog-copyright" style="display: none;">
+  <div id="dialog-copyright" class="ui-dialog-content ui-widget-content" data-title="<?php print t('Conditions for use of cover service'); ?>">
+    <?php print $copyright_text; ?>
+  </div>
 </div>

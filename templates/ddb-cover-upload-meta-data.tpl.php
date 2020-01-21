@@ -1,4 +1,15 @@
 <div>
+  <h3>Material information</h3>
+  <div class="content">
+    <div class="field field-label-inline">
+      <div class="field-label"><?php print t('Post id') . ':';?>&nbsp;</div>
+      <div><?php print $material->getId(); ?></div>
+    </div>
+    <div class="field field-label-inline">
+      <div class="field-label"><?php print t('Material name') . ':';?>&nbsp;</div>
+      <div><?php print $material->getTitle(); ?></div>
+    </div>
+  </div>
   <h3>Image metadata</h3>
   <div class="content">
     <div class="field field-label-inline">
