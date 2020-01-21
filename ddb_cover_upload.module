@@ -49,6 +49,22 @@ function ddb_cover_upload_menu() {
     'access arguments' => array('upload cover'),
     'file' => 'ddb_cover_upload.admin.inc',
   );
+  $items['admin/config/cover_upload/upload/settings'] = array(
+    'title' => 'Cover upload settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ddb_cover_upload_settings_form'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2,
+    'access arguments' => array('administer site configuration'),
+    'file' => 'ddb_cover_upload.admin.inc',
+  );
+  $items['cover_upload/ting_reference/autocomplete'] = array(
+    'page callback' => '_cover_upload_ting_reference_autocomplete',
+    'file' => 'ddb_cover_upload.autocomplete.inc',
+    'page arguments' => array(3),
+    'access arguments' => array('upload cover'),
+    'type' => MENU_CALLBACK,
+  );
 
   return $items;
 }
@@ -70,7 +86,7 @@ function ddb_cover_upload_permission() {
 function ddb_cover_upload_theme($existing, $type, $theme, $path) {
   return array(
     'ddb_cover_upload_conditions' => array(
-      'variables' => array(),
+      'variables' => array('copyright_text' => NULL),
       'template' => 'ddb-cover-upload-conditions',
       'path' => $path . '/templates/'
     ),
@@ -85,12 +101,12 @@ function ddb_cover_upload_theme($existing, $type, $theme, $path) {
       'path' => $path . '/templates/'
     ),
     'ddb_cover_upload_meta_data' => array(
-      'variables' => array('file_data' => NULL, 'meta_data' => NULL),
+      'variables' => array('material' => NULL, 'file_data' => NULL, 'meta_data' => NULL),
       'template' => 'ddb-cover-upload-meta-data',
       'path' => $path . '/templates/'
     ),
     'ddb_cover_upload_meta_copyright' => array(
-      'variables' => array(),
+      'variables' => array('copyright_text' => NULL),
       'template' => 'ddb-cover-upload-meta-copyright',
       'path' => $path . '/templates/'
     ),
