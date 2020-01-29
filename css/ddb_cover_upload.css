@@ -1,3 +1,8 @@
+/**
+ * @file
+ * Styling for ddb cover upload module.
+ * This should only be added to cover upload specific pages.
+ */
 :root {
   --spacer: 1rem;
   --color-gray-100: #f5f5f5;
@@ -28,9 +33,28 @@
   text-align: center;
 }
 
-.img-responsive {
+.img-displayed {
+  max-width: 100%;
+}
+
+.img-submitted {
+  max-width:150px;
+}
+
+#img-original {
   max-width: 100%;
   width: 100%;
+  display: none;
+}
+
+.changed-warning {
+  color: #ed541d; /* Seven color */
+  font-size: .7em;
+  font-weight: normal;
+}
+
+#edit-finish {
+  float: right;
 }
 
 .overflow-hidden {
@@ -55,6 +79,13 @@
   text-decoration: none;;
 }
 
+.btn.btn-primary.disabled {
+  background: #eee none;
+  border-color: #eee;
+  text-shadow: none;
+  color: #999;
+}
+
 .spinner {
   width: 100px;
   height: 100px;
@@ -68,4 +99,16 @@
   100% {
     transform:rotate(360deg);
   }
+}
+
+/* Override javascript styles. */
+.ui-dialog.set-size {
+  width: 80% !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  margin-top: 5em !important;
+  margin-bottom: 5em !important;
 }

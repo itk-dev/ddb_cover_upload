@@ -9,4 +9,5 @@ dependencies[] = file
 dependencies[] = image
 dependencies[] = ding_provider
 dependencies[] = ting
+dependencies[] = ding_libs
 

@@ -1,36 +1,7 @@
 <?php
-
 /**
  * @file
  * Admin interface for handling uploads to cover service.
- */
-
-/**
- * @todo Remove these comments.
- * Extensible wizard form example.
- *
- * This is an example of a multistep form using a wizard style. It will include
- * the 'Previous' and 'Next' buttons when required, and a 'Finish' button at the
- * last stage of the form submission.
- *
- * This example is an extensible skeleton that can include (even
- * programmatically) more steps. The demonstration form includes three steps,
- * each step having its own validation functions.
- *
- * How to extend this example:
- * - Steps are defined in the _form_example_steps() function. Include or alter
- *   the steps as you require.
- * - For each step, implement the corresponding 'form' function (see
- *   'ddb_cover_upload_conditions' for the first step in this example.)
- *   Each step is a regular form, and the wizard collects all the values of the
- *   included forms.
- * - Optionally, you may include custom validation functions using the regular
- *   validation hook (formname_validate). The wizard uses these validation
- *   functions for each step.
- * - The most important customization step is to change the submit handler and
- *   do whatever you want with the collected information. In this case, the
- *   example just shows the collected values in the various steps.
- * @ingroup form_example
  */
 
 /**
@@ -38,7 +9,6 @@
  *
  * @return array
  *   List of steps and their forms.
- *
  */
 function _ddb_cover_upload_form_steps() {
   return array(
@@ -82,10 +52,12 @@ function _ddb_cover_upload_form_steps() {
  *   The full form including all steps.
  */
 function ddb_cover_upload_form($form, &$form_state) {
-  global $user;
+    global $user;
+    $form_state['current_user'] = $user;
+
   // Initialize a description of the steps for the wizard.
   if (empty($form_state['step'])) {
-    _ddb_cover_upload_determine_step($user, drupal_get_query_parameters(),$form_state);
+    _ddb_cover_upload_determine_step(drupal_get_query_parameters(),$form_state);
 
     // This array contains the function to be called at each step to get the
     // relevant form elements. It will also store state information for each
@@ -97,6 +69,7 @@ function ddb_cover_upload_form($form, &$form_state) {
   // Call the function named in $form_state['step_information'] to get the
   // form elements to display for this step.
   $form = $form_state['step_information'][$step]['form']($form, $form_state);
+
   // Attach assets to form.
   $form['#attached'] = array (
     'css' => array (
@@ -106,18 +79,22 @@ function ddb_cover_upload_form($form, &$form_state) {
       array('system', 'ui.dialog'),
     ),
     'js' => array(
-      drupal_get_path('module', 'ddb_cover_upload') . '/js/ddb_cover_upload_dialog.js'
-    )
+      drupal_get_path('module', 'ddb_cover_upload') . '/js/ddb_cover_upload_dialog.js',
+      drupal_get_path('module', 'ddb_cover_upload') . '/js/ddb_cover_upload_crop.js'
+    ),
+    'libraries_load' => array(
+      array('cropperjs'),
+      array('jquery-cropper'),
+      array('camanjs')
+    ),
   );
-
 
   // Set title for step.
   drupal_set_title(_ddb_cover_upload_get_title($step, $form_state));
 
-  // We use #limit_validation_errors to
-  // skip all complaints about validation when using the back button. The
-  // values entered will be discarded, but they will not be validated, which
-  // would be annoying in a "back" button.
+  // We use #limit_validation_errors to skip all complaints about validation
+  // when using the back button. The values entered will be discarded, but they
+  // will not be validated, which would be annoying in a "back" button.
   if ($step > 1) {
     $form['prev'] = array(
       '#type' => 'submit',
@@ -150,6 +127,241 @@ function ddb_cover_upload_form($form, &$form_state) {
   }
 
   return $form;
+}
+
+/**
+ * Accept terms of use of the form.
+ *
+ * @param $form
+ *   The form element.
+ * @param $form_state
+ *   The state of the form.
+ *
+ * @return array
+ *   The form for displaying and accepting terms of use.
+ *
+ * @throws \Exception
+ *   Theme exception error.
+ */
+function ddb_cover_upload_conditions($form, &$form_state) {
+  $form = array();
+  $no_terms_set = t('[Contact DDB for copyright information and change module settings]');
+  $terms = variable_get('ddb_cover_upload_terms_of_use')['value'];
+  $form['ddb_cover_upload_conditions'] = array(
+    '#markup' => theme('ddb_cover_upload_conditions', array(
+      'copyright_text' => empty($terms) ? $no_terms_set : $terms
+    ))
+  );
+
+  $form['ddb_cover_upload_confirm'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('I accept conditions'),
+    '#required' => TRUE,
+  );
+  return $form;
+}
+
+/**
+ * Select ting material step of the form.
+ *
+ * @param $form
+ *   The form element.
+ * @param $form_state
+ *   The state of the form.
+ *
+ * @return array
+ *   The form for referencing a material.
+ */
+function ddb_cover_upload_material($form, &$form_state) {
+  $form = array();
+  // @todo Allow lookup through isbn etc.
+  $form['ddb_cover_upload_material'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Material'),
+    '#description' => t('Hint: Lorem ipsum.'),
+    '#autocomplete_path' => 'cover_upload/ting_reference/autocomplete',
+    '#required' => TRUE,
+    '#default_value' => !empty($form_state['values']['material']) ? $form_state['values']['material'] : '',
+  );
+  return $form;
+}
+
+/**
+ * Image upload step of the form.
+ *
+ * @param $form
+ *   The form element.
+ * @param $form_state
+ *   The state of the form.
+ *
+ * @return array
+ *   The form for image upload.
+ *
+ * @throws \Exception
+ *   Theme exception error.
+ */
+function ddb_cover_upload_image_upload($form, &$form_state) {
+  $form = array();
+
+  $upload_validators = array(
+    'file_validate_extensions' => array('gif png jpg jpeg'),
+    'file_validate_size' => array(_ddb_cover_upload_return_bytes(ini_get('post_max_size'))),
+  );
+  $form['ddb_cover_upload_image'] = array(
+    '#title' => t('Upload image'),
+    '#type' => 'managed_file',
+    '#required' => TRUE,
+    '#default_value' => variable_get('ddb_cover_upload_image', ''),
+    '#progress_indicator' =>'bar',
+    '#progress_message' => 'Uploading...',
+    '#upload_location' => 'public://upload_cover_service',
+    '#upload_validators' =>$upload_validators,
+    '#description' => theme('file_upload_help', array('description' => t('Upload a file from your computer.'), 'upload_validators' => $upload_validators)),
+  );
+
+  $form['#suffix'] = theme('ddb_cover_upload_best_result', array());
+
+  return $form;
+}
+
+/**
+ * Meta data step of the form.
+ *
+ * @param $form
+ *   The form element.
+ * @param $form_state
+ *   The state of the form.
+ *
+ * @return array
+ *   The form for image upload.
+ *
+ * @throws \Exception
+ *   Theme exception error.
+ */
+function ddb_cover_upload_meta($form, &$form_state) {
+  $form = array();
+
+  $form['ddb_cover_upload_meta'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('wrapper', 'admin', 'clearfix')
+    ),
+  );
+  $form['ddb_cover_upload_meta']['left'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('left')
+    ),
+  );
+  $form['ddb_cover_upload_meta']['right'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('right')
+    ),
+  );
+
+  // The uploaded file.
+  $uploaded = file_load($form_state['input']['ddb_cover_upload_image']['fid']);
+  $publicPath = drupal_realpath(variable_get('file_public_path','sites/default/files'));
+
+  // Determine full path for image.
+  $originalImagePath = $publicPath . '/upload_cover_service/' . $uploaded->filename;
+
+  // Get metadata for original image.
+  $originalImage = getimagesize($originalImagePath);
+
+  // Set name and path to use for altered image.
+  $altImageName = $uploaded->fid . '.jpg';
+  $alteredImagePath = $publicPath . '/upload_cover_service/' . $uploaded->fid . '/' . $altImageName;
+
+  // Set default metadata when page is first loaded.
+  $displayedImageUrl =  file_create_url($uploaded->uri);
+  $displayedFileName = $uploaded->filename;
+  $displayedWidth = $originalImage[0];
+  $displayedHeight = $originalImage[1];
+  $displayedType = $originalImage['mime'];
+  $displayedSize = filesize($originalImagePath);
+  $alteredImageTime = 0;
+  $form_state['author'] = variable_get('site_name','undefined');
+  $form_state['image_altered'] = FALSE;
+
+  // If the image has been changed override variables.
+  if(file_exists($alteredImagePath)) {
+    $alteredImage = getimagesize($alteredImagePath);
+    $displayedWidth = $alteredImage[0];
+    $displayedHeight = $alteredImage[1];
+    $displayedType = $alteredImage['mime'];
+    $displayedSize = filesize($alteredImagePath);
+    $displayedImageUrl = file_create_url(file_build_uri('/upload_cover_service/' . $uploaded->fid . '/' . $altImageName));
+    // Use timestamp as query param on image to prevent caching
+    // https://stackoverflow.com/questions/1077041/refresh-image-with-a-new-one-at-the-same-url/22429796#22429796
+    $alteredImageTime = filemtime($alteredImagePath);
+    $form_state['image_altered'] = TRUE;
+  }
+
+  // Add uploaded file to template.
+  $form['ddb_cover_upload_meta']['left']['ddb_cover_upload_meta_left'] = array(
+    '#markup' => theme('ddb_cover_upload_meta_left', array(
+        'original_image' => theme_image(array(
+          'path' => $uploaded->uri,
+          'attributes' => array (
+            'id' => 'img-original',
+            'data-file-id' => $uploaded->fid
+          )
+        )),
+        'displayed_image' => $displayedImageUrl,
+        'altered_time' => $alteredImageTime,
+        'adapt_link_title' => $alteredImageTime > 0 ? t('Redo image adaption') : t('Adapt image'),
+      )
+    )
+  );
+
+  $form['ddb_cover_upload_meta']['right']['ddb_cover_upload_meta_data'] = array(
+    '#markup' => theme('ddb_cover_upload_meta_data', array(
+      'material' => ding_entity_load($form_state['step_information'][1]['stored_values']['ddb_cover_upload_material']),
+      'file_data' => $uploaded,
+      'meta_data' => array (
+        'image_changed' => isset($alteredImage) ? TRUE : FALSE,
+        'file_name' => $displayedFileName,
+        'file_dimensions' => array ('x' => $displayedWidth, 'y' => $displayedHeight),
+        'file_type' => $displayedType,
+        'file_size' => $displayedSize,
+        'author' => $form_state['author']
+      ),
+    )),
+  );
+
+  $form['ddb_cover_upload_meta']['right']['ddb_cover_upload_meta_input'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Image accreditation'),
+    '#default_value' => variable_get('ddb_cover_upload_meta_input', ''),
+    '#size' => 60,
+    '#maxlength' => 128,
+  );
+
+  $no_terms_set = t('[Contact DDB for copyright information and change module settings]');
+  $terms = variable_get('ddb_cover_upload_terms_of_use')['value'];
+  $form['ddb_cover_upload_meta']['right']['ddb_cover_upload_meta_copyright'] = array(
+    '#markup' => theme('ddb_cover_upload_meta_copyright', array(
+      'copyright_text' => empty($terms) ? $no_terms_set : $terms
+    ))
+  );
+
+  return $form;
+}
+
+/**
+ * Validation for "Select ting material" step.
+ *
+ * @param $form
+ *   The form element.
+ * @param $form_state
+ *   The state of the form.
+ */
+function ddb_cover_upload_material_validate($form, &$form_state) {
+  // We must render the title again.
+  $step = &$form_state['step'];
+  drupal_set_title(_ddb_cover_upload_get_title($step, $form_state));
 }
 
 /**
@@ -212,221 +424,48 @@ function ddb_cover_upload_next_submit($form, &$form_state) {
 }
 
 /**
- * Accept terms of use of the form.
+ * Multi step form submit handler for cover upload.
  *
  * @param $form
  *   The form element.
  * @param $form_state
  *   The state of the form.
- *
- * @return array
- *   The form for displaying and accepting terms of use.
  *
  * @throws \Exception
- *   Theme exception error.
- */
-function ddb_cover_upload_conditions($form, &$form_state) {
-  $form = array();
-  $no_terms_set = t('[Contact DDB for copyright information and change module settings]');
-  $terms = variable_get('ddb_cover_upload_terms_of_use')['value'];
-  $form['ddb_cover_upload_conditions'] = array(
-    '#markup' => theme('ddb_cover_upload_conditions', array(
-      'copyright_text' => empty($terms) ? $no_terms_set : $terms
-    ))
-  );
-
-  $form['ddb_cover_upload_confirm'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('I accept conditions'),
-    '#required' => TRUE,
-  );
-  return $form;
-}
-
-/**
- * Select ting material step of the form.
- *
- * @param $form
- *   The form element.
- * @param $form_state
- *   The state of the form.
- *
- * @return array
- *   The form for referencing a material.
- */
-function ddb_cover_upload_material($form, &$form_state) {
-  $form = array();
-  // @todo Change this to a ting reference field.
-  $form['ddb_cover_upload_material'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Material'),
-    '#description' => t('Hint: Lorem ipsum.'),
-    '#autocomplete_path' => 'cover_upload/ting_reference/autocomplete',
-    '#required' => TRUE,
-    '#default_value' => !empty($form_state['values']['material']) ? $form_state['values']['material'] : '',
-  );
-  return $form;
-}
-
-/**
- * Validation for "Select ting material" step.
- *
- * @param $form
- *   The form element.
- * @param $form_state
- *   The state of the form.
- */
-function ddb_cover_upload_material_validate($form, &$form_state) {
-  // We must render the title again.
-  $step = &$form_state['step'];
-  drupal_set_title(_ddb_cover_upload_get_title($step, $form_state));
-}
-
-/**
- * Image upload step of the form.
- *
- * @param $form
- *   The form element.
- * @param $form_state
- *   The state of the form.
- *
- * @return array
- *   The form for image upload.
- *
- * @throws \Exception
- *   Theme exception error.
- */
-function ddb_cover_upload_image_upload($form, &$form_state) {
-  $form = array();
-
-  $upload_validators = array(
-    'file_validate_extensions' => array('gif png jpg jpeg'),
-    'file_validate_size' => array(_ddb_cover_upload_return_bytes(ini_get('post_max_size'))),
-  );
-  $form['ddb_cover_upload_image'] = array(
-    '#title' => t('Upload image'),
-    '#type' => 'managed_file',
-    '#required' => TRUE,
-    '#default_value' => variable_get('ddb_cover_upload_image', ''),
-    '#progress_indicator' =>'bar',
-    '#progress_message' => 'Uploading...',
-    '#upload_location' => 'public://',
-    '#upload_validators' =>$upload_validators,
-    '#description' => theme('file_upload_help', array('description' => 'Upload a file from your computer.', 'upload_validators' => $upload_validators)),
-  );
-
-  $form['#suffix'] = theme('ddb_cover_upload_best_result', array());
-
-  return $form;
-}
-
-/**
- * Meta data step of the form.
- *
- * @param $form
- *   The form element.
- * @param $form_state
- *   The state of the form.
- *
- * @return array
- *   The form for image upload.
- *
- * @throws \Exception
- *   Theme exception error.
- */
-function ddb_cover_upload_meta($form, &$form_state) {
-  $form = array();
-
-  $form['ddb_cover_upload_meta'] = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array('wrapper', 'admin', 'clearfix')
-    ),
-  );
-  $form['ddb_cover_upload_meta']['left'] = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array('left')
-    ),
-  );
-  $form['ddb_cover_upload_meta']['right'] = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array('right')
-    ),
-  );
-  // Add uploaded file to template.
-  $uploaded = file_load($form_state['input']['ddb_cover_upload_image']['fid']);
-  $form['ddb_cover_upload_meta']['left']['ddb_cover_upload_meta_left'] = array(
-    '#markup' => theme('ddb_cover_upload_meta_left', array(
-        'image' => theme('image_style', array(
-          'style_name' => 'large',
-          'path' => $uploaded->uri,
-          'attributes' => array (
-            'class' => 'img-responsive',
-          )
-        ))
-      )
-    )
-  );
-  $form['ddb_cover_upload_meta']['right']['ddb_cover_upload_meta_data'] = array(
-    '#markup' => theme('ddb_cover_upload_meta_data', array(
-      'material' => ding_entity_load($form_state['step_information'][1]['stored_values']['ddb_cover_upload_material']),
-      'file_data' => $uploaded,
-      'meta_data' => array (
-        'file_size' => array ('x' => 500, 'y' => 1000),
-        'author' => 'Aarhus Kommunes Bibilioteker',
-      ),
-    )),
-  );
-  $form['ddb_cover_upload_meta']['right']['ddb_cover_upload_meta_input'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Subject'),
-    '#default_value' => variable_get('ddb_cover_upload_meta_input', ''),
-    '#size' => 60,
-    '#maxlength' => 128,
-  );
-  $no_terms_set = t('[Contact DDB for copyright information and change module settings]');
-  $terms = variable_get('ddb_cover_upload_terms_of_use')['value'];
-  $form['ddb_cover_upload_meta']['right']['ddb_cover_upload_meta_copyright'] = array(
-    '#markup' => theme('ddb_cover_upload_meta_copyright', array(
-      'copyright_text' => empty($terms) ? $no_terms_set : $terms
-    ))
-  );
-
-  return $form;
-}
-
-/**
- * Multistep form submit handler for cover upload.
- *
- * @param $form
- *   The form element.
- * @param $form_state
- *   The state of the form.
+ *   Watchdog exception error.
  */
 function ddb_cover_upload_form_submit($form, &$form_state) {
   $current_step = &$form_state['step'];
   $form_state['step_information'][$current_step]['stored_values'] = $form_state['values'];
   $form_state['redirect'] = '/admin/config/cover_upload/submitted';
+  $form_state['current_user']->data['ddb_cover_upload_conditions_accepted'] = TRUE;
+  user_save($form_state['current_user']);
+  $image_data = array(
+    'pid' => $form_state['step_information'][1]['stored_values']['ddb_cover_upload_material'],
+    'fid' => $form_state['step_information'][2]['stored_values']['ddb_cover_upload_image'],
+    'accreditation' => $form_state['input']['ddb_cover_upload_meta_input'],
+    'author' => $form_state['author'],
+    'image_altered' => $form_state['image_altered']
+  );
 
-  // @todo Call upload service.
+  _ddb_cover_upload_session('ddb_cover_upload_submitted', $image_data);
 }
 
 /**
  * Determine starting step when opening form.
  *
- * @param $user
- *   The active user.
  * @param $query
  *   The query parameters.
  * @param $form_state
  *   The state of the form.
  */
-function _ddb_cover_upload_determine_step($user, $query, &$form_state) {
+function _ddb_cover_upload_determine_step($query, &$form_state) {
   $form_state['step'] = 0;
-  // @todo Bypass step 1 if user has already accepted conditions.
-  if ($user) {
+  $conditions_accepted =
+    isset($form_state['current_user']->data['ddb_cover_upload_conditions_accepted']) ?
+      $form_state['current_user']->data['ddb_cover_upload_conditions_accepted'] :
+      FALSE;
+  if ($conditions_accepted) {
     $form_state['step'] = 1;
 
     // Also bypass material selection if pid is included as query parameter.
@@ -434,8 +473,6 @@ function _ddb_cover_upload_determine_step($user, $query, &$form_state) {
       $form_state['step'] = 2;
     }
   }
-  // @todo remove this.
-  $form_state['step'] = 0;
 }
 
 /**
@@ -486,74 +523,4 @@ function _ddb_cover_upload_return_bytes($val) {
   }
 
   return $val;
-}
-
-/**
- * Display cover submitted page.
- *
- * @return array
- *   A themed page.
- * @throws \Exception
- *   Theme exception error.
- */
-function ddb_cover_upload_submitted() {
-  return array(
-    '#attached' => array (
-      'css' => array(
-        drupal_get_path('module', 'ddb_cover_upload') . '/css/ddb_cover_upload.css',
-      ),
-    ),
-    '#markup' => theme('ddb_cover_upload_submitted', array())
-  );
-}
-
-/**
- * Display list of covers uploaded by the library.
- *
- * @return array
- *   A themed list.
- * @throws \Exception
- *   Theme exception error.
- */
-function ddb_cover_upload_list() {
-  drupal_set_title(t('List uploaded covers'));
-  $header = array(
-    t('Image'),
-    t('Material'),
-    t('Actions')
-  );
-  $rows = array();
-  return array(
-    '#markup' => theme('table', array(
-      'header' => $header,
-      'rows' => $rows,
-    ))
-  );
-}
-
-/**
- * Cover upload settings form.
- *
- * @param array $form
- *   Form structure.
- * @param array $form_state
- *   Form state values.
- *
- * @return array
- *   Form structure prepared for admin settings.
- */
-function ddb_cover_upload_settings_form($form, $form_state) {
-  $form['settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Cover upload settings'),
-  );
-
-  $form['settings']['ddb_cover_upload_terms_of_use'] = array(
-    '#type' => 'text_format',
-    '#title' => t('Terms of use'),
-    '#default_value' => variable_get('ddb_cover_upload_terms_of_use')['value'],
-    '#text_format' => 'ding_wysiwyg',
-  );
-
-  return system_settings_form($form);
 }
