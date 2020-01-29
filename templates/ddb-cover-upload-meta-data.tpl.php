@@ -1,5 +1,15 @@
+<?php
+/**
+ * @file
+ * Template for showing material information and image metadata.
+ *
+ * Available variables:
+ * - $material: A ting material.
+ * - $meta_data: Array of metadata related to the image displayed.
+ */
+?>
 <div>
-  <h3>Material information</h3>
+  <h3><?php print t('Material information');?></h3>
   <div class="content">
     <?php if(!empty($material)) : ?>
       <div class="field field-label-inline">
@@ -14,7 +24,8 @@
       <span class="changed-warning">(<?php print t('Missing material'); ?>)</span>
     <?php endif; ?>
   </div>
-  <h3>Image metadata
+  <h3>
+    <?php print t('Image metadata');?>
     <?php if ($meta_data['image_changed']) : ?>
       <span class="changed-warning">(<?php print t('Changed'); ?>)</span>
     <?php endif; ?>

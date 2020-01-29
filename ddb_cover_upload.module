@@ -97,7 +97,9 @@ function ddb_cover_upload_permission() {
 function ddb_cover_upload_theme($existing, $type, $theme, $path) {
   return array(
     'ddb_cover_upload_conditions' => array(
-      'variables' => array('copyright_text' => NULL),
+      'variables' => array(
+        'copyright_text' => NULL
+      ),
       'template' => 'ddb-cover-upload-conditions',
       'path' => $path . '/templates/'
     ),
@@ -107,22 +109,35 @@ function ddb_cover_upload_theme($existing, $type, $theme, $path) {
       'path' => $path . '/templates/'
     ),
     'ddb_cover_upload_meta_left' => array(
-      'variables' => array('image' => NULL),
+      'variables' => array(
+        'original_image' => NULL,
+        'displayed_image' => NULL,
+        'altered_time' => NULL,
+        'adapt_link_title' => NULL
+      ),
       'template' => 'ddb-cover-upload-meta-left',
       'path' => $path . '/templates/'
     ),
     'ddb_cover_upload_meta_data' => array(
-      'variables' => array('material' => NULL, 'file_data' => NULL, 'meta_data' => NULL),
+      'variables' => array(
+        'material' => NULL,
+        'meta_data' => NULL
+      ),
       'template' => 'ddb-cover-upload-meta-data',
       'path' => $path . '/templates/'
     ),
     'ddb_cover_upload_meta_copyright' => array(
-      'variables' => array('copyright_text' => NULL),
+      'variables' => array(
+        'copyright_text' => NULL
+      ),
       'template' => 'ddb-cover-upload-meta-copyright',
       'path' => $path . '/templates/'
     ),
     'ddb_cover_upload_submitted' => array(
-      'variables' => array('data' => NULL, 'image' => NULL),
+      'variables' => array(
+        'data' => NULL,
+        'image' => NULL
+      ),
       'template' => 'ddb-cover-upload-submitted',
       'path' => $path . '/templates/'
     ),

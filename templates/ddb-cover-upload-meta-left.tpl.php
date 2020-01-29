@@ -1,3 +1,15 @@
+<?php
+/**
+ * @file
+ * Template for showing image and upload dialog.
+ *
+ * Available variables:
+ * - $original_image: The original image themed.
+ * - $displayed_image: URL of the displayed image.
+ * - $altered_time: A timestamp of last alteration.
+ * - $adapt_link_title: Link label for opening dialog.
+ */
+?>
 <div class="overflow-hidden">
   <p>
     <a href="#" class="btn btn-primary opener-modal" data-dialog="dialog-image"><?php print $variables['adapt_link_title']; ?></a>
@@ -24,7 +36,7 @@
         <canvas id="canvas" class="img-responsive"></canvas>
       </div>
       <p>
-        <a href="#" id="img-submit" class="save-alt btn btn-primary">Save changes</a>
+        <a href="#" id="img-submit" class="save-alt btn btn-primary"><?php print t('Save changes');?></a>
       </p>
     </div>
   </div>
