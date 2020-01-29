@@ -203,10 +203,12 @@ function ddb_cover_upload_material($form, &$form_state) {
 function ddb_cover_upload_image_upload($form, &$form_state) {
   $form = array();
 
+  // @todo Test file types png and gif. Do they work? (Should they?)
   $upload_validators = array(
     'file_validate_extensions' => array('gif png jpg jpeg'),
     'file_validate_size' => array(_ddb_cover_upload_return_bytes(ini_get('post_max_size'))),
   );
+
   $form['ddb_cover_upload_image'] = array(
     '#title' => t('Upload image'),
     '#type' => 'managed_file',
@@ -216,7 +218,12 @@ function ddb_cover_upload_image_upload($form, &$form_state) {
     '#progress_message' => 'Uploading...',
     '#upload_location' => 'public://upload_cover_service',
     '#upload_validators' =>$upload_validators,
-    '#description' => theme('file_upload_help', array('description' => t('Upload a file from your computer.'), 'upload_validators' => $upload_validators)),
+    '#description' => theme(
+      'file_upload_help', array(
+        'description' => t('Upload a file from your computer.'),
+        'upload_validators' => $upload_validators
+      )
+    ),
   );
 
   $form['#suffix'] = theme('ddb_cover_upload_best_result', array());
@@ -299,7 +306,6 @@ function ddb_cover_upload_meta($form, &$form_state) {
     $form_state['image_altered'] = TRUE;
   }
 
-  // Add uploaded file to template.
   $form['ddb_cover_upload_meta']['left']['ddb_cover_upload_meta_left'] = array(
     '#markup' => theme('ddb_cover_upload_meta_left', array(
         'original_image' => theme_image(array(
@@ -319,7 +325,6 @@ function ddb_cover_upload_meta($form, &$form_state) {
   $form['ddb_cover_upload_meta']['right']['ddb_cover_upload_meta_data'] = array(
     '#markup' => theme('ddb_cover_upload_meta_data', array(
       'material' => ding_entity_load($form_state['step_information'][1]['stored_values']['ddb_cover_upload_material']),
-      'file_data' => $uploaded,
       'meta_data' => array (
         'image_changed' => isset($alteredImage) ? TRUE : FALSE,
         'file_name' => $displayedFileName,
@@ -360,6 +365,7 @@ function ddb_cover_upload_meta($form, &$form_state) {
  */
 function ddb_cover_upload_material_validate($form, &$form_state) {
   // We must render the title again.
+  // Ensure file is uploaded.
   $step = &$form_state['step'];
   drupal_set_title(_ddb_cover_upload_get_title($step, $form_state));
 }

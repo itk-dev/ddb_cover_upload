@@ -1,3 +1,12 @@
+<?php
+/**
+ * @file
+ * Template for showing meta copyright information.
+ *
+ * Available variables:
+ * - $copyright_text: HTML of copyright text as added from settings.
+ */
+?>
 <div>
   <h3><?php print t('Copyright information');?></h3>
   <p>
