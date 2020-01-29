@@ -13,6 +13,7 @@
  *   Theme exception error.
  */
 function ddb_cover_upload_list() {
+  // @todo get list of uploaded covers.
   drupal_set_title(t('List uploaded covers'));
   $header = array(
     t('Image'),

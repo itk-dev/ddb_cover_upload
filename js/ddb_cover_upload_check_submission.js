@@ -13,13 +13,14 @@
           dataType : 'json',
           url: '/cover_upload/check-submission',
           success: function(data) {
-            if(data === 'success') {
+            if(data.status === 'success') {
               setCompletedState(uploadNewHref);
             }
           },
           complete: function(data) {
+            var response = JSON.parse(data.responseText);
             // Schedule the next request if we are still awaiting response.
-            if(data.responseText === '"waiting"') {
+            if(response.status === 'waiting') {
               setTimeout(checkSubmission, 1000);
             }
           }

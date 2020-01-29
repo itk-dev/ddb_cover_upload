@@ -8,7 +8,7 @@
  * Add autocomplete functionality to textfield.
  * @see ddb_cover_upload_material().
  *
- * @param $string
+ * @param string $string
  *   A string provided through input text field.
  *
  * @throws \DingProviderDoesntImplement
@@ -16,7 +16,7 @@
  * @throws \DingProviderNoProvider
  *   No provider is configured for the given provider.
  */
-function _cover_upload_ting_reference_autocomplete($string) {
+function _cover_upload_ting_reference_autocomplete(string $string) {
   $matches = array();
 
   // Only use auto-complete if more that 3 chars have been written.

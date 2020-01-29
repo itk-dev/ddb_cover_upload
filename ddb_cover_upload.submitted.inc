@@ -15,6 +15,7 @@
 function ddb_cover_upload_submitted() {
   $data = _ddb_cover_upload_session('ddb_cover_upload_submitted');
   $image = _ddb_cover_upload_fetch_submitted_image($data);
+  $file = file_load($data['fid']);
   return array(
     '#attached' => array (
       'css' => array(
@@ -26,20 +27,23 @@ function ddb_cover_upload_submitted() {
     ),
     '#markup' => theme('ddb_cover_upload_submitted', array(
       'data' => $data,
-      'image' => $image
+      'image' => $file ? $image : NULL,
     ))
   );
 }
 
 /**
  * Check cover service to determine if file has been uploaded.
- * This function is called continually through ajax.
+ * This function is called continuously through ajax.
  * @todo Proper check against cover service. Currently just reports success after a while.
  * @see ddb_cover_upload_check_submission.js
  */
 function _cover_upload_check_submission() {
   $data = _ddb_cover_upload_session('ddb_cover_upload_submitted');
   $image = _ddb_cover_upload_fetch_submitted_image($data);
+  $state = array(
+    'status' => 'waiting',
+  );
 
   // @todo remove this if/else condition when proper check is implemented.
   if(empty(_ddb_cover_upload_session('ddb_cover_upload_time'))) {
@@ -53,7 +57,8 @@ function _cover_upload_check_submission() {
     // @todo Change this line and implement a proper check.
     if ($timepassed > 3) {
       // Notify frontend
-      drupal_json_output('success');
+      $state['status'] = 'success';
+      drupal_json_output($state);
       // @todo remove this line when proper check is implemented.
       unset($_SESSION['ddb_cover_upload_time']);
       _ddb_cover_upload_cleanup($data);
@@ -62,20 +67,20 @@ function _cover_upload_check_submission() {
   }
 
   // Notify frontend "Nothing to see yet".
-  drupal_json_output('waiting');
+  drupal_json_output($state);
   drupal_exit();
 }
 
 /**
  * Fetch the image that was submitted. Either an altered version or original.
  *
- * @param $data
+ * @param array $data
  *   The ddb_cover_upload data from session.
  *
  * @return bool|string
  *   A URL to the image the user decided to upload.
  */
-function _ddb_cover_upload_fetch_submitted_image($data){
+function _ddb_cover_upload_fetch_submitted_image(array $data){
   if ($data['image_altered']) {
     return(file_create_url(file_build_uri('/upload_cover_service/' . $data['fid'] . '/' . $data['fid'] . '.jpg')));
   }
@@ -88,9 +93,19 @@ function _ddb_cover_upload_fetch_submitted_image($data){
 /**
  * Remove db entry and files locally.
  *
- * @param $data
+ * @param array $data
  *   The ddb_cover_upload data from session.
  */
-function _ddb_cover_upload_cleanup($data) {
-  // @todo Cleanup
+function _ddb_cover_upload_cleanup(array $data) {
+  $file = file_load($data['fid']);
+  if ($file) {
+    $public_uri = variable_get('file_public_path','sites/default/files');
+    if ($data['image_altered']) {
+      $alteredImageDir = $public_uri . '/upload_cover_service/' . $data['fid'];
+      file_unmanaged_delete($alteredImageDir . '/' . $data['fid'] . '.jpg');
+      drupal_rmdir($alteredImageDir);
+    }
+
+    file_delete(file_load($data['fid']));
+  }
 }

@@ -43,15 +43,15 @@ function _ddb_cover_upload_form_steps() {
  * The third handler, the finish button handler, is the default form_submit
  * handler used to process the information.
  *
- * @param $form
+ * @param array $form
  *   The form element.
- * @param $form_state
+ * @param array $form_state
  *   The state of the form.
  *
  * @return mixed
  *   The full form including all steps.
  */
-function ddb_cover_upload_form($form, &$form_state) {
+function ddb_cover_upload_form(array $form, array &$form_state) {
     global $user;
     $form_state['current_user'] = $user;
 
@@ -132,9 +132,9 @@ function ddb_cover_upload_form($form, &$form_state) {
 /**
  * Accept terms of use of the form.
  *
- * @param $form
+ * @param array $form
  *   The form element.
- * @param $form_state
+ * @param array $form_state
  *   The state of the form.
  *
  * @return array
@@ -143,7 +143,7 @@ function ddb_cover_upload_form($form, &$form_state) {
  * @throws \Exception
  *   Theme exception error.
  */
-function ddb_cover_upload_conditions($form, &$form_state) {
+function ddb_cover_upload_conditions(array $form, array &$form_state) {
   $form = array();
   $no_terms_set = t('[Contact DDB for copyright information and change module settings]');
   $terms = variable_get('ddb_cover_upload_terms_of_use')['value'];
@@ -164,15 +164,15 @@ function ddb_cover_upload_conditions($form, &$form_state) {
 /**
  * Select ting material step of the form.
  *
- * @param $form
+ * @param array $form
  *   The form element.
- * @param $form_state
+ * @param array $form_state
  *   The state of the form.
  *
  * @return array
  *   The form for referencing a material.
  */
-function ddb_cover_upload_material($form, &$form_state) {
+function ddb_cover_upload_material(array $form, array &$form_state) {
   $form = array();
   // @todo Allow lookup through isbn etc.
   $form['ddb_cover_upload_material'] = array(
@@ -189,9 +189,9 @@ function ddb_cover_upload_material($form, &$form_state) {
 /**
  * Image upload step of the form.
  *
- * @param $form
+ * @param array $form
  *   The form element.
- * @param $form_state
+ * @param array $form_state
  *   The state of the form.
  *
  * @return array
@@ -200,12 +200,11 @@ function ddb_cover_upload_material($form, &$form_state) {
  * @throws \Exception
  *   Theme exception error.
  */
-function ddb_cover_upload_image_upload($form, &$form_state) {
+function ddb_cover_upload_image_upload(array $form, array &$form_state) {
   $form = array();
-
-  // @todo Test file types png and gif. Do they work? (Should they?)
+  // @todo Some how we need to handle users clicking Next before clicking fetch.
   $upload_validators = array(
-    'file_validate_extensions' => array('gif png jpg jpeg'),
+    'file_validate_extensions' => array('png jpg jpeg'),
     'file_validate_size' => array(_ddb_cover_upload_return_bytes(ini_get('post_max_size'))),
   );
 
@@ -217,7 +216,7 @@ function ddb_cover_upload_image_upload($form, &$form_state) {
     '#progress_indicator' =>'bar',
     '#progress_message' => 'Uploading...',
     '#upload_location' => 'public://upload_cover_service',
-    '#upload_validators' =>$upload_validators,
+    '#upload_validators' => $upload_validators,
     '#description' => theme(
       'file_upload_help', array(
         'description' => t('Upload a file from your computer.'),
@@ -234,9 +233,9 @@ function ddb_cover_upload_image_upload($form, &$form_state) {
 /**
  * Meta data step of the form.
  *
- * @param $form
+ * @param array $form
  *   The form element.
- * @param $form_state
+ * @param array $form_state
  *   The state of the form.
  *
  * @return array
@@ -245,7 +244,7 @@ function ddb_cover_upload_image_upload($form, &$form_state) {
  * @throws \Exception
  *   Theme exception error.
  */
-function ddb_cover_upload_meta($form, &$form_state) {
+function ddb_cover_upload_meta(array $form, array &$form_state) {
   $form = array();
 
   $form['ddb_cover_upload_meta'] = array(
@@ -356,21 +355,6 @@ function ddb_cover_upload_meta($form, &$form_state) {
 }
 
 /**
- * Validation for "Select ting material" step.
- *
- * @param $form
- *   The form element.
- * @param $form_state
- *   The state of the form.
- */
-function ddb_cover_upload_material_validate($form, &$form_state) {
-  // We must render the title again.
-  // Ensure file is uploaded.
-  $step = &$form_state['step'];
-  drupal_set_title(_ddb_cover_upload_get_title($step, $form_state));
-}
-
-/**
  * Submit handler for the "previous" button.
  *
  * This function:
@@ -379,12 +363,12 @@ function ddb_cover_upload_material_validate($form, &$form_state) {
  * - Replaces $form_state['values'] with the values from the previous state.
  * - Forces form rebuild.
  *
- * @param $form
+ * @param array $form
  *   The form element.
- * @param $form_state
+ * @param array $form_state
  *   The state of the form.
  */
-function ddb_cover_upload_previous_submit($form, &$form_state) {
+function ddb_cover_upload_previous_submit(array $form, array &$form_state) {
   $current_step = &$form_state['step'];
   $form_state['step_information'][$current_step]['stored_values'] = $form_state['input'];
   if ($current_step > 1) {
@@ -406,12 +390,12 @@ function ddb_cover_upload_previous_submit($form, &$form_state) {
  *   or with array() if we haven't been here before.
  * - Force form rebuild.
  *
- * @param $form
+ * @param array $form
  *   The form element.
- * @param $form_state
+ * @param array $form_state
  *   The state of the form.
  */
-function ddb_cover_upload_next_submit($form, &$form_state) {
+function ddb_cover_upload_next_submit(array $form, array &$form_state) {
   $current_step = &$form_state['step'];
   $form_state['step_information'][$current_step]['stored_values'] = $form_state['values'];
 
@@ -432,15 +416,15 @@ function ddb_cover_upload_next_submit($form, &$form_state) {
 /**
  * Multi step form submit handler for cover upload.
  *
- * @param $form
+ * @param array $form
  *   The form element.
- * @param $form_state
+ * @param array $form_state
  *   The state of the form.
  *
  * @throws \Exception
  *   Watchdog exception error.
  */
-function ddb_cover_upload_form_submit($form, &$form_state) {
+function ddb_cover_upload_form_submit(array $form, array &$form_state) {
   $current_step = &$form_state['step'];
   $form_state['step_information'][$current_step]['stored_values'] = $form_state['values'];
   $form_state['redirect'] = '/admin/config/cover_upload/submitted';
@@ -460,12 +444,12 @@ function ddb_cover_upload_form_submit($form, &$form_state) {
 /**
  * Determine starting step when opening form.
  *
- * @param $query
+ * @param array $query
  *   The query parameters.
- * @param $form_state
+ * @param array $form_state
  *   The state of the form.
  */
-function _ddb_cover_upload_determine_step($query, &$form_state) {
+function _ddb_cover_upload_determine_step(array $query, array &$form_state) {
   $form_state['step'] = 0;
   $conditions_accepted =
     isset($form_state['current_user']->data['ddb_cover_upload_conditions_accepted']) ?
@@ -484,14 +468,14 @@ function _ddb_cover_upload_determine_step($query, &$form_state) {
 /**
  * Get a title for the form step.
  *
- * @param $step
+ * @param int $step
  *   Display title depending on steps.
- * @param $form_state
+ * @param array $form_state
  *   The state of the form.
  * @return array|mixed|string|null
  *   The title to display.
  */
-function _ddb_cover_upload_get_title($step, $form_state) {
+function _ddb_cover_upload_get_title(int $step, array $form_state) {
   if ($step == 0) {
     $title = t('Upload cover: @step_title', array('@step_title' => $form_state['step_information'][$step]['step_title']));
   }
@@ -504,13 +488,13 @@ function _ddb_cover_upload_get_title($step, $form_state) {
 /**
  * Translate file size values from strings calculated bytes.
  *
- * @param $val
+ * @param string $val
  *   A string representation of file sizes.
  *
  * @return float|int|string
  *   A calculated value of bytes.
  */
-function _ddb_cover_upload_return_bytes($val) {
+function _ddb_cover_upload_return_bytes(string $val) {
   $val = trim($val);
   $last = strtolower($val[strlen($val)-1]);
   $val = intval($val);
