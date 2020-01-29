@@ -15,7 +15,7 @@
  * @return array
  *   Form structure for admin settings.
  */
-function ddb_cover_upload_settings_form($form, $form_state) {
+function ddb_cover_upload_settings_form(array $form, array $form_state) {
   $form['settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('Cover upload settings'),

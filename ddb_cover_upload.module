@@ -145,9 +145,9 @@ function ddb_cover_upload_theme($existing, $type, $theme, $path) {
 }
 
 /**
- * Store and retrieve variables from session
+ * Store and retrieve variables from session.
  *
- * @param $key
+ * @param string $key
  *   Key to be set or got
  * @param $value
  *   Value to set for $key
@@ -155,7 +155,7 @@ function ddb_cover_upload_theme($existing, $type, $theme, $path) {
  * @return mixed
  *   If only $key is given, sought-after value for $key
  */
-function _ddb_cover_upload_session($key, $value = null) {
+function _ddb_cover_upload_session(string $key, $value = null) {
   if (isset($value)) {
     unset($_SESSION[$key]);
     $_SESSION[$key] = $value;

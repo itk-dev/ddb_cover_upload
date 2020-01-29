@@ -11,7 +11,9 @@
 <div class="container">
   <div class="row">
     <div class="col-12 center">
-      <img class="img-submitted" src="<?php print $image; ?>">
+      <?php if($image) : ?>
+        <img class="img-submitted" src="<?php print $image; ?>">
+      <?php endif; ?>
       <div class="js-spinner">
         <div class="spinner">
           <?php print file_get_contents($directory . '/images/spinner.svg'); ?>
@@ -19,10 +21,18 @@
         <h3><?php print t('Sending image to cover service - Please wait a moment');?></h3>
       </div>
       <div class="js-confirmation" style="display:none">
-        <div class="success">
-          <?php print file_get_contents($directory . '/images/check.svg'); ?>
-        </div>
-        <h3><?php print t('Success - Your image will now be added to cover service'); ?></h3>
+        <?php if($image) : ?>
+          <div class="success">
+            <?php print file_get_contents($directory . '/images/check.svg'); ?>
+          </div>
+          <h3><?php print t('Success - Your image will now be added to cover service'); ?></h3>
+        <?php else : ?>
+          <h3>
+            <p><?php print t('Local image not found.') ?></p>
+            <p><?php print t('Images are deleted after upload. Did you perhaps reload this page?') ?></p>
+          </h3>
+          <p><a class="btn btn-primary disabled" id="js-upload-another" href="/admin/config/cover_upload/upload"><?php print t('Upload another'); ?></a></p>
+        <?php endif; ?>
       </div>
     </div>
   </div>
