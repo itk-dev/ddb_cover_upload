@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Enables option to upload covers to cover service.
@@ -34,7 +33,7 @@ function ddb_cover_upload_menu() {
     'description' => 'Communicating with cover service.',
     'page callback' => 'ddb_cover_upload_submitted',
     'access arguments' => array('upload cover'),
-    'file' => 'ddb_cover_upload.admin.inc',
+    'file' => 'ddb_cover_upload.submitted.inc',
   );
   $items['admin/config/cover_upload/upload/new'] = array(
     'title' => 'Upload cover to cover service',
@@ -47,7 +46,7 @@ function ddb_cover_upload_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
     'access arguments' => array('upload cover'),
-    'file' => 'ddb_cover_upload.admin.inc',
+    'file' => 'ddb_cover_upload.uploaded_list.inc',
   );
   $items['admin/config/cover_upload/upload/settings'] = array(
     'title' => 'Cover upload settings',
@@ -56,7 +55,7 @@ function ddb_cover_upload_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 2,
     'access arguments' => array('administer site configuration'),
-    'file' => 'ddb_cover_upload.admin.inc',
+    'file' => 'ddb_cover_upload.settings.inc',
   );
   $items['cover_upload/ting_reference/autocomplete'] = array(
     'page callback' => '_cover_upload_ting_reference_autocomplete',
@@ -64,6 +63,18 @@ function ddb_cover_upload_menu() {
     'page arguments' => array(3),
     'access arguments' => array('upload cover'),
     'type' => MENU_CALLBACK,
+  );
+  $items['cover_upload/create_alt_image'] = array(
+    'page callback' => '_cover_upload_create_alt_image',
+    'file' => 'ddb_cover_upload.create_alt_image.inc',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('upload cover'),
+  );
+  $items['cover_upload/check-submission'] = array(
+    'page callback' => '_cover_upload_check_submission',
+    'file' => 'ddb_cover_upload.submitted.inc',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('upload cover'),
   );
 
   return $items;
@@ -111,9 +122,31 @@ function ddb_cover_upload_theme($existing, $type, $theme, $path) {
       'path' => $path . '/templates/'
     ),
     'ddb_cover_upload_submitted' => array(
-      'variables' => array(),
+      'variables' => array('data' => NULL, 'image' => NULL),
       'template' => 'ddb-cover-upload-submitted',
       'path' => $path . '/templates/'
     ),
   );
+}
+
+/**
+ * Store and retrieve variables from session
+ *
+ * @param $key
+ *   Key to be set or got
+ * @param $value
+ *   Value to set for $key
+ *
+ * @return mixed
+ *   If only $key is given, sought-after value for $key
+ */
+function _ddb_cover_upload_session($key, $value = null) {
+  if (isset($value)) {
+    unset($_SESSION[$key]);
+    $_SESSION[$key] = $value;
+  }
+
+  if (isset($_SESSION[$key])) {
+    return $_SESSION[$key];
+  }
 }

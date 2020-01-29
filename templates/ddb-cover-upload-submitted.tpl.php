@@ -1,23 +1,26 @@
 <div class="container">
   <div class="row">
     <div class="col-12 center">
-      <img src="//placehold.it/140x200" alt="Placeholder">
-      <div class="spinner">
-        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-          <g fill="none" fill-rule="evenodd">
-            <path fill="#EAEAEA" d="M50,17 C68.2253967,17 83,31.7746033 83,50 C83,68.2253967 68.2253967,83 50,83 C31.7746033,83 17,68.2253967 17,50 C17,31.7746033 31.7746033,17 50,17 Z M50,22 C34.536027,22 22,34.536027 22,50 C22,65.463973 34.536027,78 50,78 C65.463973,78 78,65.463973 78,50 C78,34.536027 65.463973,22 50,22 Z"/>
-            <path fill="#555" d="M50,17 C68.2253967,17 83,31.7746033 83,50 L78,50 L78,50 C78,34.536027 65.463973,22 50,22 L50,17 L50,17 Z"/>
-          </g>
-        </svg>
+      <img class="img-submitted" src="<?php print $image; ?>">
+      <div class="js-spinner">
+        <div class="spinner">
+          <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+            <g fill="none" fill-rule="evenodd">
+              <path fill="#EAEAEA" d="M50,17 C68.2253967,17 83,31.7746033 83,50 C83,68.2253967 68.2253967,83 50,83 C31.7746033,83 17,68.2253967 17,50 C17,31.7746033 31.7746033,17 50,17 Z M50,22 C34.536027,22 22,34.536027 22,50 C22,65.463973 34.536027,78 50,78 C65.463973,78 78,65.463973 78,50 C78,34.536027 65.463973,22 50,22 Z"/>
+              <path fill="#555" d="M50,17 C68.2253967,17 83,31.7746033 83,50 L78,50 L78,50 C78,34.536027 65.463973,22 50,22 L50,17 L50,17 Z"/>
+            </g>
+          </svg>
+        </div>
+        <h3><?php print t('Sending image to cover service - Please wait a monment');?></h3>
       </div>
-      <h3>Sender billedet til forside serivce - Vent et øjeebilk</h3>
-<!-- @TODO: Show when upload completed.
-      <div class="success">
-        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-          <path fill="#08A276" fill-rule="evenodd" d="M50.5,18 C68.4492544,18 83,32.5507456 83,50.5 C83,68.4492544 68.4492544,83 50.5,83 C32.5507456,83 18,68.4492544 18,50.5 C18,32.5507456 32.5507456,18 50.5,18 Z M64.3479911,37.9447934 L44.8252448,57.4675396 L37.6519183,50.2942131 C37.3040912,49.946386 36.740204,49.946386 36.3923044,50.2942131 L34.2931655,52.393352 C33.9453384,52.7411791 33.9453384,53.3050663 34.2931655,53.6529659 L44.1954742,63.5552746 C44.5432288,63.9030292 45.107116,63.9030292 45.4550155,63.5552746 L67.7066715,41.3035462 C68.0544985,40.9557916 68.0544985,40.3918319 67.7066715,40.0440048 L65.6075325,37.9447934 C65.2597054,37.5970388 64.6958182,37.5970388 64.3479911,37.9447934 Z"/>
-        </svg>
+      <div class="js-confirmation" style="display:none">
+        <div class="success">
+          <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+            <path fill="#08A276" fill-rule="evenodd" d="M50.5,18 C68.4492544,18 83,32.5507456 83,50.5 C83,68.4492544 68.4492544,83 50.5,83 C32.5507456,83 18,68.4492544 18,50.5 C18,32.5507456 32.5507456,18 50.5,18 Z M64.3479911,37.9447934 L44.8252448,57.4675396 L37.6519183,50.2942131 C37.3040912,49.946386 36.740204,49.946386 36.3923044,50.2942131 L34.2931655,52.393352 C33.9453384,52.7411791 33.9453384,53.3050663 34.2931655,53.6529659 L44.1954742,63.5552746 C44.5432288,63.9030292 45.107116,63.9030292 45.4550155,63.5552746 L67.7066715,41.3035462 C68.0544985,40.9557916 68.0544985,40.3918319 67.7066715,40.0440048 L65.6075325,37.9447934 C65.2597054,37.5970388 64.6958182,37.5970388 64.3479911,37.9447934 Z"/>
+          </svg>
+        </div>
+        <h3>Success - Dit billede vil nu blive tilføjet til forside servicen</h3>
       </div>
-      <h3>Success - Dit billede vil nu blive tilføjet til forside servicen</h3> -->
     </div>
   </div>
   <div class="border border-gray">
@@ -87,7 +90,7 @@
   </div>
   <div class="row">
     <div class="col-12">
-      <p><a class="btn btn-primary" href="/admin/config/cover_upload/upload">Upload another</a></p>
+      <p><a class="btn btn-primary disabled" id="js-upload-another" href="/admin/config/cover_upload/upload">Upload another</a></p>
     </div>
   </div>
 </div>
