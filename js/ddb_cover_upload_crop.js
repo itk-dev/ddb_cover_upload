@@ -29,7 +29,6 @@
               }
             }).data("cropper");
           });
-
           // Handle brightness and contrast buttons.
           $(".brightness, .contrast").on("click", function() {
             if (!caman) return;
@@ -47,6 +46,10 @@
                 caman.contrast(-10);
                 break;
             }
+            // @todo Handle cropper/caman integration better. The image is
+            //  replaced on each click which means you can't properly revert
+            //  brightness and contrast changes.
+            // https://github.com/fengyuanchen/cropper/issues/585
             caman.render(function() {
               cropper.replace(this.toBase64(), true);
             });
@@ -56,6 +59,34 @@
           $('.crop-rotate').on("click", function () {
             var degrees = $(this).attr("data-degrees");
             cropper.rotate(degrees);
+          });
+
+          // Handle mirroring.
+          $('.mirror-x').on("click", function () {
+            if (cropper.getData().scaleX === 1) {
+              cropper.scaleX(-1);
+            }
+            else {
+              cropper.scaleX(1);
+            }
+          });
+
+          // Handle mirroring.
+          $('.mirror-y').on("click", function () {
+            if (cropper.getData().scaleY === 1) {
+              cropper.scaleY(-1);
+            }
+            else {
+              cropper.scaleY(1);
+            }
+          });
+
+          // Handle rotation buttons.
+          $('.image-reset').on("click", function () {
+            caman.render(function() {
+              // @todo Handle brightness and contrast reset.
+              cropper.reset();
+            });
           });
 
           // Submit modified image.
