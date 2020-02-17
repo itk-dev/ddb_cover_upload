@@ -15,6 +15,7 @@ function _cover_upload_create_alt_image() {
   $file_name = $_FILES['croppedImage']['name'];
   $file_name_exploded = explode('.', $file_name);
   $files_path = 'sites/default/files/upload_cover_service/';
+
   // @todo Maybe change the folder permissions.
   mkdir($files_path . $file_name_exploded[0], 0700);
   $file_to_upload = $_FILES['croppedImage']['tmp_name'];

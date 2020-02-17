@@ -4,6 +4,11 @@
  * Admin interface for handling uploads to cover service.
  */
 
+define('DDB_COVER_UPLOAD_STEP1', 0);
+define('DDB_COVER_UPLOAD_STEP2', 1);
+define('DDB_COVER_UPLOAD_STEP3', 2);
+define('DDB_COVER_UPLOAD_STEP4', 3);
+
 /**
  * Returns the list of steps and their associated forms.
  *
@@ -12,19 +17,19 @@
  */
 function _ddb_cover_upload_form_steps() {
   return array(
-    0 => array(
+    DDB_COVER_UPLOAD_STEP1 => array(
       'form' => 'ddb_cover_upload_conditions',
       'step_title' => t('First time use')
     ),
-    1 => array(
+    DDB_COVER_UPLOAD_STEP2 => array(
       'form' => 'ddb_cover_upload_material',
       'step_title' => t('Select material')
     ),
-    2 => array(
+    DDB_COVER_UPLOAD_STEP3 => array(
       'form' => 'ddb_cover_upload_image_upload',
       'step_title' => t('Select image')
     ),
-    3 => array(
+    DDB_COVER_UPLOAD_STEP4 => array(
       'form' => 'ddb_cover_upload_meta',
       'step_title' => t('Verify image')
     ),
@@ -32,7 +37,7 @@ function _ddb_cover_upload_form_steps() {
 }
 
 /**
- * The primary formbuilder for the multistep form.
+ * The primary form builder for the multi-step form.
  *
  * This will include the rest of the form steps defined.
  *
@@ -48,16 +53,15 @@ function _ddb_cover_upload_form_steps() {
  * @param array $form_state
  *   The state of the form.
  *
- * @return mixed
+ * @return array
  *   The full form including all steps.
  */
 function ddb_cover_upload_form(array $form, array &$form_state) {
-    global $user;
-    $form_state['current_user'] = $user;
+
 
   // Initialize a description of the steps for the wizard.
   if (empty($form_state['step'])) {
-    _ddb_cover_upload_determine_step(drupal_get_query_parameters(),$form_state);
+    _ddb_cover_upload_determine_step(drupal_get_query_parameters(), $form_state);
 
     // This array contains the function to be called at each step to get the
     // relevant form elements. It will also store state information for each
@@ -175,6 +179,7 @@ function ddb_cover_upload_conditions(array $form, array &$form_state) {
 function ddb_cover_upload_material(array $form, array &$form_state) {
   $form = array();
   // @todo Allow lookup through isbn etc.
+
   $form['ddb_cover_upload_material'] = array(
     '#type' => 'textfield',
     '#title' => t('Material'),
@@ -371,7 +376,7 @@ function ddb_cover_upload_meta(array $form, array &$form_state) {
 function ddb_cover_upload_previous_submit(array $form, array &$form_state) {
   $current_step = &$form_state['step'];
   $form_state['step_information'][$current_step]['stored_values'] = $form_state['input'];
-  if ($current_step > 1) {
+  if ($current_step > DDB_COVER_UPLOAD_STEP2) {
     $current_step--;
     if(isset($form_state['step_information'][$current_step]['stored_values'])) {
       $form_state['values'] = $form_state['step_information'][$current_step]['stored_values'];
@@ -428,8 +433,9 @@ function ddb_cover_upload_form_submit(array $form, array &$form_state) {
   $current_step = &$form_state['step'];
   $form_state['step_information'][$current_step]['stored_values'] = $form_state['values'];
   $form_state['redirect'] = '/admin/config/cover_upload/submitted';
-  $form_state['current_user']->data['ddb_cover_upload_conditions_accepted'] = TRUE;
-  user_save($form_state['current_user']);
+
+  _ddb_cover_upload_save_conditions_acceptance();
+
   $image_data = array(
     'pid' => $form_state['step_information'][1]['stored_values']['ddb_cover_upload_material'],
     'fid' => $form_state['step_information'][2]['stored_values']['ddb_cover_upload_image'],
@@ -450,18 +456,55 @@ function ddb_cover_upload_form_submit(array $form, array &$form_state) {
  *   The state of the form.
  */
 function _ddb_cover_upload_determine_step(array $query, array &$form_state) {
-  $form_state['step'] = 0;
-  $conditions_accepted =
-    isset($form_state['current_user']->data['ddb_cover_upload_conditions_accepted']) ?
-      $form_state['current_user']->data['ddb_cover_upload_conditions_accepted'] :
-      FALSE;
-  if ($conditions_accepted) {
-    $form_state['step'] = 1;
+  $form_state['step'] = DDB_COVER_UPLOAD_STEP1;
+
+  if (_ddb_cover_upload_is_conditions_accepted()) {
+    $form_state['step'] = DDB_COVER_UPLOAD_STEP2;
 
     // Also bypass material selection if pid is included as query parameter.
     if(isset($query['pid'])) {
-      $form_state['step'] = 2;
+      $form_state['step'] = DDB_COVER_UPLOAD_STEP3;
     }
+  }
+}
+
+/**
+ * Check if the state of conditions of usages acceptance.
+ *
+ * @return bool
+ *   TRUE if they have been accepted else FALSE.
+ */
+function _ddb_cover_upload_is_conditions_accepted() {
+  global $user;
+
+  return isset($user->data['ddb_cover_upload_conditions_accepted']) ?
+    $user['current_user']->data['ddb_cover_upload_conditions_accepted'] :
+    FALSE;
+}
+
+/**
+ * Save usage acceptance.
+ *
+ * @param bool $value
+ *   If TRUE it is accepted else FALSE. Default TRUE.
+ *
+ * @return bool
+ *   TRUE if saved else FALSE.
+ */
+function _ddb_cover_upload_save_conditions_acceptance(bool $value = TRUE) {
+  global $user;
+
+  try {
+    $user->data['ddb_cover_upload_conditions_accepted'] = TRUE;
+    user_save($user);
+
+    return TRUE;
+  }
+  catch (Exception $exception) {
+    drupal_set_message(t('Error saving user acceptance of usage conditions'), 'error');
+    watchdog_exception('ddb_cover_upload', $exception);
+
+    RETURN FALSE;
   }
 }
 
@@ -476,7 +519,7 @@ function _ddb_cover_upload_determine_step(array $query, array &$form_state) {
  *   The title to display.
  */
 function _ddb_cover_upload_get_title(int $step, array $form_state) {
-  if ($step == 0) {
+  if ($step == DDB_COVER_UPLOAD_STEP1) {
     $title = t('Upload cover: @step_title', array('@step_title' => $form_state['step_information'][$step]['step_title']));
   }
   else {
@@ -514,3 +557,4 @@ function _ddb_cover_upload_return_bytes(string $val) {
 
   return $val;
 }
+
