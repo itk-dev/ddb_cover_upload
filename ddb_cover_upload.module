@@ -8,6 +8,8 @@
  * Implements hook_menu().
  */
 function ddb_cover_upload_menu() {
+  $inc_path = drupal_get_path('module', 'ddb_cover_upload') . '/includes';
+
   $items['admin/config/cover_upload'] = array(
     'title' => 'Cover service',
     'description' => 'Upload an image to cover service.',
@@ -26,7 +28,9 @@ function ddb_cover_upload_menu() {
     'page arguments' => array('ddb_cover_upload_form'),
     'access arguments' => array('upload cover'),
     'file' => 'ddb_cover_upload.admin.inc',
+    'file path' => $inc_path,
   );
+
   $items['admin/config/cover_upload/submitted'] = array(
     'type' => MENU_CALLBACK,
     'title' => 'Communicating with cover service',
@@ -34,12 +38,15 @@ function ddb_cover_upload_menu() {
     'page callback' => 'ddb_cover_upload_submitted',
     'access arguments' => array('upload cover'),
     'file' => 'ddb_cover_upload.submitted.inc',
+    'file path' => $inc_path,
   );
+
   $items['admin/config/cover_upload/upload/new'] = array(
     'title' => 'Upload cover to cover service',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
   );
+
   $items['admin/config/cover_upload/upload/list'] = array(
     'title' => 'List uploaded covers',
     'page callback' => 'ddb_cover_upload_list',
@@ -47,7 +54,9 @@ function ddb_cover_upload_menu() {
     'weight' => 1,
     'access arguments' => array('upload cover'),
     'file' => 'ddb_cover_upload.uploaded_list.inc',
+    'file path' => $inc_path,
   );
+
   $items['admin/config/cover_upload/upload/settings'] = array(
     'title' => 'Cover upload settings',
     'page callback' => 'drupal_get_form',
@@ -56,20 +65,25 @@ function ddb_cover_upload_menu() {
     'weight' => 2,
     'access arguments' => array('administer site configuration'),
     'file' => 'ddb_cover_upload.settings.inc',
+    'file path' => $inc_path,
   );
+
   $items['cover_upload/ting_reference/autocomplete'] = array(
     'page callback' => '_cover_upload_ting_reference_autocomplete',
-    'file' => 'ddb_cover_upload.autocomplete.inc',
     'page arguments' => array(3),
     'access arguments' => array('upload cover'),
     'type' => MENU_CALLBACK,
+    'file' => 'ddb_cover_upload.autocomplete.inc',
+    'file path' => $inc_path,
   );
+
   $items['cover_upload/create_alt_image'] = array(
     'page callback' => '_cover_upload_create_alt_image',
     'file' => 'ddb_cover_upload.create_alt_image.inc',
     'type' => MENU_CALLBACK,
     'access arguments' => array('upload cover'),
   );
+
   $items['cover_upload/check-submission'] = array(
     'page callback' => '_cover_upload_check_submission',
     'file' => 'ddb_cover_upload.submitted.inc',
@@ -156,7 +170,7 @@ function ddb_cover_upload_theme($existing, $type, $theme, $path) {
  *   If only $key is given, sought-after value for $key
  */
 function _ddb_cover_upload_session(string $key, $value = null) {
-  if (isset($value)) {
+  if (!is_null($value)) {
     unset($_SESSION[$key]);
     $_SESSION[$key] = $value;
   }

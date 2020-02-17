@@ -26,7 +26,7 @@ function _cover_upload_ting_reference_autocomplete(string $string) {
       $query = ding_provider_invoke('search', 'prepare_reference_query', $string);
     }
     else {
-      // Else fall back to a standard freetext search.
+      // Else fall back to a standard free text search.
       $query = ting_start_query()->withFullTextQuery($string);
     }
 

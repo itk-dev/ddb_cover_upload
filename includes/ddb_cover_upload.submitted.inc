@@ -34,8 +34,10 @@ function ddb_cover_upload_submitted() {
 
 /**
  * Check cover service to determine if file has been uploaded.
+ *
  * This function is called continuously through ajax.
  * @todo Proper check against cover service. Currently just reports success after a while.
+ *
  * @see ddb_cover_upload_check_submission.js
  */
 function _cover_upload_check_submission() {
