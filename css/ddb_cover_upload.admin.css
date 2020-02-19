@@ -107,3 +107,18 @@
   margin-top: 5em !important;
   margin-bottom: 5em !important;
 }
+
+.tui-image-editor-wrapper {
+  height: 800px;
+}
+
+.ting-object .field-name-ting-cover {
+  float: left;
+  padding-right: 10px;
+}
+
+.ting-object .field-name-ting-cover img {
+  width: 160px;
+}
+
+
