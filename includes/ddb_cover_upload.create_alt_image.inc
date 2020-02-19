@@ -7,7 +7,9 @@
 /**
  * Create an alternate image of original upload and save it under fid folder as
  * [fid].jpg.
+ *
  * This function is called when an image cropping is completed.
+ *
  * @see ddb_cover_upload_crop.js
  */
 function _cover_upload_create_alt_image() {

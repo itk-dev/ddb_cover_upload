@@ -1,6 +1,6 @@
 /**
  * @file
- * Use drupals built in modal.
+ * Use Drupal's built in modal.
  */
 
 (function ($) {
@@ -8,6 +8,9 @@
     attach: function (context, settings) {
       let dialogLink = '.opener-modal';
       $(dialogLink).click(function() {
+
+        console.log('test');
+
         let dialogId = '#' + $(this).attr("data-dialog");
         $(dialogId).dialog({
           title: $(dialogId).attr("data-title"),

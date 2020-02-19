@@ -19,7 +19,7 @@ function ddb_cover_upload_submitted() {
   return array(
     '#attached' => array (
       'css' => array(
-        drupal_get_path('module', 'ddb_cover_upload') . '/css/ddb_cover_upload.css',
+        drupal_get_path('module', 'ddb_cover_upload') . '/css/ddb_cover_upload.admin.css',
       ),
       'js' => array(
         drupal_get_path('module', 'ddb_cover_upload') . '/js/ddb_cover_upload_check_submission.js',

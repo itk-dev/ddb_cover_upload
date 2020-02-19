@@ -4,6 +4,7 @@
  * Template for showing best result.
  */
 ?>
+
 <div class="container border border-gray">
   <div class="row">
     <div class="col-12">
@@ -14,7 +15,7 @@
     <div class="col-3">
       <div class="media center">
         <div class="media-icon">
-          <?php print file_get_contents($directory . '/images/reflections.svg'); ?>
+          <?php print file_get_contents($path . '/images/reflections.svg'); ?>
         </div>
         <div class="media-body">
           <h3><?php print t('Avoid reflections')?></h3>
@@ -25,7 +26,7 @@
     <div class="col-3">
       <div class="media center">
         <div class="media-icon">
-          <?php print file_get_contents($directory . '/images/crop.svg'); ?>
+          <?php print file_get_contents($path . '/images/crop.svg'); ?>
         </div>
         <div class="media-body">
           <h3><?php print t('Crop')?></h3>
@@ -36,7 +37,7 @@
     <div class="col-3">
       <div class="media center">
         <div class="media-icon">
-          <?php print file_get_contents($directory . '/images/rotate.svg'); ?>
+          <?php print file_get_contents($path . '/images/rotate.svg'); ?>
         </div>
         <div class="media-body">
           <h3><?php print t('Rotate')?></h3>
@@ -47,7 +48,7 @@
     <div class="col-3">
       <div class="media center">
         <div class="media-icon">
-          <?php print file_get_contents($directory . '/images/size.svg'); ?>
+          <?php print file_get_contents($path . '/images/size.svg'); ?>
         </div>
         <div class="media-body">
           <h3><?php print t('Size')?></h3>
