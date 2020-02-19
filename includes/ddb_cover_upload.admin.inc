@@ -162,15 +162,33 @@ function ddb_cover_upload_conditions(array &$form_state) {
 /**
  * Select ting material step of the form.
  *
+ * @param array $form
+ *   The form array.
  * @param array $form_state
  *   The state of the form.
  *
  * @return array
  *   The form for referencing a material.
+ *
+ * @throws \Exception
  */
 function ddb_cover_upload_material(array $form, array &$form_state) {
+  $form['ddb_cover_upload'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('wrapper', 'admin', 'clearfix')
+    ),
+  );
+
+  $form['ddb_cover_upload']['left'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('left')
+    ),
+  );
+
   // @todo Allow lookup through isbn etc.
-  $form['ddb_cover_upload_material'] = array(
+  $form['ddb_cover_upload']['left']['ddb_cover_upload_material'] = array(
     '#type' => 'textfield',
     '#title' => t('Material'),
     '#description' => t('Hint: Lorem ipsum.'),
@@ -179,12 +197,61 @@ function ddb_cover_upload_material(array $form, array &$form_state) {
     '#default_value' => $form_state['values']['ddb_cover_upload_material'] ?? '',
   );
 
+  $form['ddb_cover_upload']['right'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('right')
+    ),
+  );
+
+  $form['lookup'] = array(
+    '#type' => 'submit',
+    '#value' => 'Lookup',
+    '#ajax' => array(
+      'callback' => 'ddb_cover_upload_search_preview',
+      'wrapper' => 'search-lookup-wrapper',
+      'method' => 'replace',
+      'effect' => 'fade',
+    ),
+  );
+
+  $content = FALSE;
+  if (isset($form_state['values']['ddb_cover_upload_material'])) {
+    $entity = ding_entity_load($form_state['values']['ddb_cover_upload_material'], 'ting_object');
+    $content = ting_object_view($entity, 'teaser');
+  }
+
+  $form['ddb_cover_upload']['right']['results'] = array(
+    '#markup' => theme('ddb_cover_upload_search_preview', array('content' => $content)),
+  );
+
   return $form;
 }
 
 /**
+ * Ajax form callback to render search preview.
+ */
+function ddb_cover_upload_search_preview(array $form, array $form_state) {
+  $id = $form_state['values']['ddb_cover_upload_material'];
+
+  $entity = ding_entity_load($id, 'ting_object');
+  $content = FALSE;
+  if ($entity) {
+    $content = ting_object_view($entity, 'teaser');
+  }
+
+  $form['ddb_cover_upload']['right']['results'] = array(
+    '#markup' => theme('ddb_cover_upload_search_preview', array('content' => $content)),
+  );
+
+  return $form['ddb_cover_upload']['right']['results'];
+}
+
+/**
  * Image upload step of the form.
- *
+
+ * @param array $form
+ *   The form array.
  * @param array $form_state
  *   The state of the form.
  *
@@ -222,7 +289,7 @@ function ddb_cover_upload_image_upload(array $form, array &$form_state) {
   );
 
   $form['image_editor'] = array(
-    '#markup' => '<div style="height: 800px;" class="form-wrapper"><div id="tui-image-editor">IMAGE EDITOR</div><div>',
+    '#markup' => theme('ddb_cover_upload_image_editor'),
   );
 
   $form['is'] = array(
@@ -230,13 +297,13 @@ function ddb_cover_upload_image_upload(array $form, array &$form_state) {
     '#value' => $form_state['step_information'][DDB_COVER_UPLOAD_STEP2]['stored_values']['ddb_cover_upload_material'],
   );
 
-  // This needs to have an default value to allow JS to change the value.
   $image = 'https://res.cloudinary.com/dandigbib/image/upload/v1576082092/default/forside-mangler-c.jpg';
   if (isset($form_state['step_information'][DDB_COVER_UPLOAD_STEP3]['stored_values']['image_file'])) {
     $image = file_create_url($form_state['step_information'][DDB_COVER_UPLOAD_STEP3]['stored_values']['image_file']) . '?' . REQUEST_TIME;
   }
   $form['image_file'] = array(
     '#type' => 'hidden',
+    // This needs to have an default value to allow JS to change the value.
     '#default_value' => $image,
   );
 
@@ -249,6 +316,8 @@ function ddb_cover_upload_image_upload(array $form, array &$form_state) {
 /**
  * Meta data step of the form.
  *
+ * @param array $form
+ *   The form array.
  * @param array $form_state
  *   The state of the form.
  *
@@ -259,7 +328,6 @@ function ddb_cover_upload_image_upload(array $form, array &$form_state) {
  *   Theme exception error.
  */
 function ddb_cover_upload_meta(array $form, array &$form_state) {
-
   $form['ddb_cover_upload_meta'] = array(
     '#type' => 'container',
     '#attributes' => array(
@@ -279,19 +347,14 @@ function ddb_cover_upload_meta(array $form, array &$form_state) {
 
   // Get metadata for original image.
   $originalImage = getimagesize($originalImagePath);
-
-  // Set default metadata when page is first loaded.
   $displayedImageUrl = file_create_url($originalImagePath) . '?' . REQUEST_TIME;
-  $displayedFileName = '';
-  $displayedWidth = $originalImage[0];
-  $displayedHeight = $originalImage[1];
-  $displayedType = $originalImage['mime'];
-  $displayedSize = filesize($originalImagePath);
+
 
   $form_state['author'] = variable_get('site_name', 'undefined');
 
+  // @TODO: move into template.
   $form['ddb_cover_upload_meta']['left']['ddb_cover_upload_meta_data'] = array(
-      '#markup' => '<div class="left form-wrapper"><img class="img-displayed" src="'.$displayedImageUrl.'"></div>',
+      '#markup' => '<div class="left form-wrapper"><img class="img-displayed" src="' . $displayedImageUrl . '"></div>',
   );
 
   $form['ddb_cover_upload_meta']['right']['ddb_cover_upload_meta_data'] = array(
@@ -299,10 +362,9 @@ function ddb_cover_upload_meta(array $form, array &$form_state) {
       'material' => ding_entity_load($form_state['step_information'][1]['stored_values']['ddb_cover_upload_material']),
       'image_url' => $displayedImageUrl,
       'meta_data' => array(
-        'file_name' => $displayedFileName,
-        'file_dimensions' => array('x' => $displayedWidth, 'y' => $displayedHeight),
-        'file_type' => $displayedType,
-        'file_size' => $displayedSize,
+        'file_dimensions' => array('x' => $originalImage[0], 'y' => $originalImage[1]),
+        'file_type' => $originalImage['mime'],
+        'file_size' => filesize($originalImagePath),
         'author' => $form_state['author']
       ),
     )),
@@ -311,7 +373,7 @@ function ddb_cover_upload_meta(array $form, array &$form_state) {
   $form['ddb_cover_upload_meta']['right']['ddb_cover_upload_meta_input'] = array(
     '#type' => 'textfield',
     '#title' => t('Image accreditation'),
-    '#default_value' => variable_get('ddb_cover_upload_meta_input', ''),
+    '#default_value' => $form_state['values']['ddb_cover_upload_meta_data'] ?? '',
     '#size' => 60,
     '#maxlength' => 128,
   );
@@ -407,11 +469,10 @@ function ddb_cover_upload_form_submit(array $form, array &$form_state) {
   $form_state['redirect'] = '/admin/config/cover_upload/submitted';
 
   $image_data = array(
-    'pid' => $form_state['step_information'][1]['stored_values']['ddb_cover_upload_material'],
-    'fid' => $form_state['step_information'][2]['stored_values']['ddb_cover_upload_image'],
+    'pid' => $form_state['step_information'][DDB_COVER_UPLOAD_STEP2]['stored_values']['ddb_cover_upload_material'],
+    'image_uri' => $form_state['step_information'][DDB_COVER_UPLOAD_STEP3]['stored_values']['image_file'],
     'accreditation' => $form_state['input']['ddb_cover_upload_meta_input'],
-    'author' => $form_state['author'],
-    'image_altered' => $form_state['image_altered']
+    'agency' => variable_get('ting_agency', ''),
   );
 
   _ddb_cover_upload_session('ddb_cover_upload_submitted', $image_data);

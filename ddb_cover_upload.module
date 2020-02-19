@@ -4,12 +4,10 @@
  * Enables option to upload covers to cover service.
  */
 
-
 define('DDB_COVER_UPLOAD_STEP1', 0);
 define('DDB_COVER_UPLOAD_STEP2', 1);
 define('DDB_COVER_UPLOAD_STEP3', 2);
 define('DDB_COVER_UPLOAD_STEP4', 3);
-
 define('DDB_COVER_UPLOAD_FILE_PATH', 'ddb_cover_upload_uploaded');
 
 /**
@@ -46,6 +44,8 @@ function ddb_cover_upload_menu() {
     'access arguments' => array('upload cover'),
     'type' => MENU_CALLBACK,
   );
+
+
 
 
 
@@ -98,13 +98,6 @@ function ddb_cover_upload_menu() {
     'file path' => $inc_path,
   );
 
-  $items['cover_upload/create_alt_image'] = array(
-    'page callback' => '_cover_upload_create_alt_image',
-    'file' => 'ddb_cover_upload.create_alt_image.inc',
-    'type' => MENU_CALLBACK,
-    'access arguments' => array('upload cover'),
-  );
-
   $items['cover_upload/check-submission'] = array(
     'page callback' => '_cover_upload_check_submission',
     'file' => 'ddb_cover_upload.submitted.inc',
@@ -136,6 +129,17 @@ function ddb_cover_upload_theme($existing, $type, $theme, $path) {
         'copyright_text' => NULL
       ),
       'template' => 'ddb-cover-upload-conditions',
+      'path' => $path . '/templates/'
+    ),
+    'ddb_cover_upload_image_editor' => array(
+      'template' => 'ddb-cover-upload-image-editor',
+      'path' => $path . '/templates/'
+    ),
+    'ddb_cover_upload_search_preview' => array(
+      'variables' => array(
+        'content' => FALSE,
+      ),
+      'template' => 'ddb-cover-upload-search-preview',
       'path' => $path . '/templates/'
     ),
     'ddb_cover_upload_best_result' => array(
