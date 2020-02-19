@@ -192,7 +192,7 @@ function ddb_cover_upload_material(array $form, array &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Material'),
     '#description' => t('Hint: Lorem ipsum.'),
-    '#autocomplete_path' => 'cover_upload/ting_reference/autocomplete',
+    '#autocomplete_path' => 'admin/config/cover_upload/autocomplete',
     '#required' => TRUE,
     '#default_value' => $form_state['values']['ddb_cover_upload_material'] ?? '',
   );
@@ -466,7 +466,7 @@ function ddb_cover_upload_next_submit(array $form, array &$form_state) {
 function ddb_cover_upload_form_submit(array $form, array &$form_state) {
   $current_step = $form_state['step'];
   $form_state['step_information'][$current_step]['stored_values'] = $form_state['values'];
-  $form_state['redirect'] = '/admin/config/cover_upload/submitted';
+  $form_state['redirect'] = '/admin/config/cover_upload/upload/submitted';
 
   $image_data = array(
     'pid' => $form_state['step_information'][DDB_COVER_UPLOAD_STEP2]['stored_values']['ddb_cover_upload_material'],

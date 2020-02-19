@@ -11,9 +11,9 @@
         $.ajax({
           type: 'get',
           dataType : 'json',
-          url: '/cover_upload/check-submission',
+          url: '/admin/config/cover_upload/submitted/check-submission',
           success: function(data) {
-            if(data.status === 'success') {
+            if (data.status === 'success') {
               setCompletedState(uploadNewHref);
             }
           },
