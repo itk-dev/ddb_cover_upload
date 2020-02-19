@@ -4,7 +4,7 @@
  * Template for showing meta copyright information.
  *
  * Available variables:
- * - $copyright_text: HTML of copyright text as added from settings.
+ *   - $copyright_text: HTML of copyright text as added from settings.
  */
 ?>
 <div>

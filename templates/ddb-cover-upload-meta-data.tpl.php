@@ -24,12 +24,11 @@
       <span class="changed-warning">(<?php print t('Missing material'); ?>)</span>
     <?php endif; ?>
   </div>
+
   <h3>
     <?php print t('Image metadata');?>
-    <?php if ($meta_data['image_changed']) : ?>
-      <span class="changed-warning">(<?php print t('Changed'); ?>)</span>
-    <?php endif; ?>
   </h3>
+
   <div class="content">
     <div class="field field-label-inline">
       <div class="field-label"><?php print t('Image name') . ':';?>&nbsp;</div>
@@ -39,7 +38,7 @@
     </div>
     <div class="field field-label-inline">
       <div class="field-label"><?php print t('Image dimensions') . ':';?>&nbsp;</div>
-      <div><?php print $meta_data['file_dimensions']['x'] . 'X' . $meta_data['file_dimensions']['y'];?></div>
+      <div><?php print $meta_data['file_dimensions']['x'] . ' x ' . $meta_data['file_dimensions']['y'];?></div>
     </div>
     <div class="field field-label-inline">
       <div class="field-label"><?php print t('Image file type') . ':';?>&nbsp;</div>

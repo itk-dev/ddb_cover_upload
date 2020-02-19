@@ -4,6 +4,14 @@
  * Enables option to upload covers to cover service.
  */
 
+
+define('DDB_COVER_UPLOAD_STEP1', 0);
+define('DDB_COVER_UPLOAD_STEP2', 1);
+define('DDB_COVER_UPLOAD_STEP3', 2);
+define('DDB_COVER_UPLOAD_STEP4', 3);
+
+define('DDB_COVER_UPLOAD_FILE_PATH', 'ddb_cover_upload_uploaded');
+
 /**
  * Implements hook_menu().
  */
@@ -30,6 +38,19 @@ function ddb_cover_upload_menu() {
     'file' => 'ddb_cover_upload.admin.inc',
     'file path' => $inc_path,
   );
+
+  $items['admin/config/cover_upload/ajax'] = array(
+    'title' => 'Upload image',
+    'description' => 'Upload base64 encoded image.',
+    'page callback' => 'ddb_cover_upload_image_upload_ajax',
+    'access arguments' => array('upload cover'),
+    'type' => MENU_CALLBACK,
+  );
+
+
+
+
+
 
   $items['admin/config/cover_upload/submitted'] = array(
     'type' => MENU_CALLBACK,
@@ -118,24 +139,17 @@ function ddb_cover_upload_theme($existing, $type, $theme, $path) {
       'path' => $path . '/templates/'
     ),
     'ddb_cover_upload_best_result' => array(
-      'variables' => array(),
-      'template' => 'ddb-cover-upload-best-result',
-      'path' => $path . '/templates/'
-    ),
-    'ddb_cover_upload_meta_left' => array(
       'variables' => array(
-        'original_image' => NULL,
-        'displayed_image' => NULL,
-        'altered_time' => NULL,
-        'adapt_link_title' => NULL
+        'path' => drupal_get_path('module', 'ddb_cover_upload'),
       ),
-      'template' => 'ddb-cover-upload-meta-left',
+      'template' => 'ddb-cover-upload-best-result',
       'path' => $path . '/templates/'
     ),
     'ddb_cover_upload_meta_data' => array(
       'variables' => array(
         'material' => NULL,
-        'meta_data' => NULL
+        'meta_data' => NULL,
+        'image_url' => NULL,
       ),
       'template' => 'ddb-cover-upload-meta-data',
       'path' => $path . '/templates/'
@@ -156,6 +170,54 @@ function ddb_cover_upload_theme($existing, $type, $theme, $path) {
       'path' => $path . '/templates/'
     ),
   );
+}
+
+/**
+ * Ajax upload base64 encoded image data.
+ *
+ * Store posted base64 encoded image as file and return json array with url.
+ */
+function ddb_cover_upload_image_upload_ajax() {
+  $error = NULL;
+  $file = NULL;
+
+  if (isset($_POST['is']) && isset($_POST['base64data'])) {
+    $is = $_POST['is'];
+    $data = $_POST['base64data'];
+
+    if (preg_match('/^data:image\/(\w+);base64,/', $data, $type)) {
+      $data = substr($data, strpos($data, ',') + 1);
+      $type = strtolower($type[1]);
+
+      if (!in_array($type, [ 'jpg', 'jpeg', 'png' ])) {
+        $error = t('Invalid image type uploaded.');
+      }
+
+      $data = base64_decode($data);
+      if ($data === false) {
+        $error = t('The uploaded data is not base64 encoded.');
+      }
+    }
+    else {
+      $error = t('The uploaded image did not match data URI with image data.');
+    }
+
+    // Extract fid from filename.
+    $filename = $is . '.' . $type;
+    $uri = 'public://' . DDB_COVER_UPLOAD_FILE_PATH;
+
+    $file = file_unmanaged_save_data($data, $uri . '/' . $filename, FILE_EXISTS_REPLACE);
+    if ($file === FALSE) {
+      $error = t('Failed to save file to the server.');
+    }
+  }
+
+  drupal_json_output(array(
+    'error' => $error,
+    'uri' => $file,
+    'url' => $file ? file_create_url($file) . '?' . REQUEST_TIME : '',
+  ));
+  drupal_exit();
 }
 
 /**

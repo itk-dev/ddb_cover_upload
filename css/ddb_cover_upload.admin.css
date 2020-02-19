@@ -3,6 +3,7 @@
  * Styling for ddb cover upload module.
  * This should only be added to cover upload specific pages.
  */
+
 :root {
   --spacer: 1rem;
   --color-gray-100: #f5f5f5;
@@ -39,12 +40,6 @@
 
 .img-submitted {
   max-width:150px;
-}
-
-#img-original {
-  max-width: 100%;
-  width: 100%;
-  display: none;
 }
 
 .changed-warning {
