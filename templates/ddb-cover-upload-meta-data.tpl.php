@@ -31,12 +31,6 @@
 
   <div class="content">
     <div class="field field-label-inline">
-      <div class="field-label"><?php print t('Image name') . ':';?>&nbsp;</div>
-      <div>
-        <?php print $meta_data['file_name'];?>
-      </div>
-    </div>
-    <div class="field field-label-inline">
       <div class="field-label"><?php print t('Image dimensions') . ':';?>&nbsp;</div>
       <div><?php print $meta_data['file_dimensions']['x'] . ' x ' . $meta_data['file_dimensions']['y'];?></div>
     </div>

@@ -122,3 +122,6 @@
 }
 
 
+.tui-image-editor-download-btn {
+  display: none !important;
+}

@@ -262,13 +262,25 @@ function ddb_cover_upload_search_preview(array $form, array $form_state) {
  *   Theme exception error.
  */
 function ddb_cover_upload_image_upload(array $form, array &$form_state) {
+  $path = drupal_get_path('module', 'ddb_cover_upload');
+
+  $form['#attached']['js'][] = array(
+    'data' => array(
+      'ddbCoverUpload' => array(
+        'bashPath' => $path,
+      )
+    ),
+    'type' => 'setting'
+  );
+
   // Attache Toast TUI image upload/editor.
   $form['#attached']['css']['https://uicdn.toast.com/tui-color-picker/v2.2.3/tui-color-picker.css'] = array (
     'type' => 'external',
   );
-  $form['#attached']['css']['https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.css'] = array (
+  $form['#attached']['css']['https://uicdn.toast.com/tui-image-editor/v3.8.0/tui-image-editor.css'] = array (
     'type' => 'external',
   );
+
   $form['#attached']['js']['https://cdnjs.cloudflare.com/ajax/libs/fabric.js/3.3.2/fabric.js'] = array (
     'type' => 'external',
   );
@@ -283,7 +295,6 @@ function ddb_cover_upload_image_upload(array $form, array &$form_state) {
   );
 
   // Custom JS to handle image upload and configuration of the image editor.
-  $path = drupal_get_path('module', 'ddb_cover_upload');
   $form['#attached']['js'][$path . '/js/ddb_cover_upload_ui.admin.js'] = array (
     'type' => 'file',
   );
