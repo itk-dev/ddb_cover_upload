@@ -16,14 +16,14 @@
       <?php endif; ?>
       <div class="js-spinner">
         <div class="spinner">
-          <?php print file_get_contents($directory . '/images/spinner.svg'); ?>
+          <?php print file_get_contents($path . '/images/spinner.svg'); ?>
         </div>
         <h3><?php print t('Sending image to cover service - Please wait a moment');?></h3>
       </div>
       <div class="js-confirmation" style="display:none">
         <?php if($image) : ?>
           <div class="success">
-            <?php print file_get_contents($directory . '/images/check.svg'); ?>
+            <?php print file_get_contents($path . '/images/check.svg'); ?>
           </div>
           <h3><?php print t('Success - Your image will now be added to cover service'); ?></h3>
         <?php else : ?>
@@ -46,7 +46,7 @@
       <div class="col-3">
         <div class="media center">
           <div class="media-icon">
-            <?php print file_get_contents($directory . '/images/indexing.svg'); ?>
+            <?php print file_get_contents($path . '/images/indexing.svg'); ?>
           </div>
           <div class="media-body">
             <h3><?php print t('Indexing'); ?></h3>
@@ -57,7 +57,7 @@
       <div class="col-3">
         <div class="media center">
           <div class="media-icon">
-            <?php print file_get_contents($directory . '/images/cache_cms.svg'); ?>
+            <?php print file_get_contents($path . '/images/cache_cms.svg'); ?>
           </div>
           <div class="media-body">
             <h3><?php print t('Cache in CMS'); ?></h3>
@@ -68,7 +68,7 @@
       <div class="col-3">
         <div class="media center">
           <div class="media-icon">
-            <?php print file_get_contents($directory . '/images/cache_browser.svg'); ?>
+            <?php print file_get_contents($path . '/images/cache_browser.svg'); ?>
           </div>
           <div class="media-body">
             <h3><?php print t('Cache in browser'); ?></h3>
@@ -79,7 +79,7 @@
       <div class="col-3">
         <div class="media center">
           <div class="media-icon">
-            <?php print file_get_contents($directory . '/images/delete_cache.svg'); ?>
+            <?php print file_get_contents($path . '/images/delete_cache.svg'); ?>
           </div>
           <div class="media-body">
             <h3><?php print t('Delete browser cache'); ?></h3>

@@ -14,7 +14,7 @@ define('DDB_COVER_UPLOAD_FILE_PATH', 'ddb_cover_upload_uploaded');
  * Implements hook_menu().
  */
 function ddb_cover_upload_menu() {
-  $inc_path = drupal_get_path('module', 'ddb_cover_upload') . '/includes';
+  $path = drupal_get_path('module', 'ddb_cover_upload') . '/includes';
 
   $items['admin/config/cover_upload'] = array(
     'title' => 'Cover service',
@@ -34,7 +34,16 @@ function ddb_cover_upload_menu() {
     'page arguments' => array('ddb_cover_upload_form'),
     'access arguments' => array('upload cover'),
     'file' => 'ddb_cover_upload.admin.inc',
-    'file path' => $inc_path,
+    'file path' => $path,
+  );
+
+  $items['admin/config/cover_upload/autocomplete'] = array(
+    'page callback' => '_cover_upload_search_autocomplete',
+    'page arguments' => array(4),
+    'access arguments' => array('upload cover'),
+    'type' => MENU_CALLBACK,
+    'file' => 'ddb_cover_upload.autocomplete.inc',
+    'file path' => $path,
   );
 
   $items['admin/config/cover_upload/ajax'] = array(
@@ -45,21 +54,22 @@ function ddb_cover_upload_menu() {
     'type' => MENU_CALLBACK,
   );
 
-
-
-
-
-
-
-
-  $items['admin/config/cover_upload/submitted'] = array(
+  $items['admin/config/cover_upload/upload/submitted'] = array(
     'type' => MENU_CALLBACK,
     'title' => 'Communicating with cover service',
     'description' => 'Communicating with cover service.',
     'page callback' => 'ddb_cover_upload_submitted',
     'access arguments' => array('upload cover'),
     'file' => 'ddb_cover_upload.submitted.inc',
-    'file path' => $inc_path,
+    'file path' => $path,
+  );
+
+  $items['admin/config/cover_upload/submitted/check-submission'] = array(
+    'page callback' => '_cover_upload_check_submission',
+    'access arguments' => array('upload cover'),
+    'type' => MENU_CALLBACK,
+    'file' => 'ddb_cover_upload.submitted.inc',
+    'file path' => $path,
   );
 
   $items['admin/config/cover_upload/upload/new'] = array(
@@ -75,7 +85,7 @@ function ddb_cover_upload_menu() {
     'weight' => 1,
     'access arguments' => array('upload cover'),
     'file' => 'ddb_cover_upload.uploaded_list.inc',
-    'file path' => $inc_path,
+    'file path' => $path,
   );
 
   $items['admin/config/cover_upload/upload/settings'] = array(
@@ -86,23 +96,7 @@ function ddb_cover_upload_menu() {
     'weight' => 2,
     'access arguments' => array('administer site configuration'),
     'file' => 'ddb_cover_upload.settings.inc',
-    'file path' => $inc_path,
-  );
-
-  $items['cover_upload/ting_reference/autocomplete'] = array(
-    'page callback' => '_cover_upload_ting_reference_autocomplete',
-    'page arguments' => array(3),
-    'access arguments' => array('upload cover'),
-    'type' => MENU_CALLBACK,
-    'file' => 'ddb_cover_upload.autocomplete.inc',
-    'file path' => $inc_path,
-  );
-
-  $items['cover_upload/check-submission'] = array(
-    'page callback' => '_cover_upload_check_submission',
-    'file' => 'ddb_cover_upload.submitted.inc',
-    'type' => MENU_CALLBACK,
-    'access arguments' => array('upload cover'),
+    'file path' => $path,
   );
 
   return $items;
@@ -168,7 +162,8 @@ function ddb_cover_upload_theme($existing, $type, $theme, $path) {
     'ddb_cover_upload_submitted' => array(
       'variables' => array(
         'data' => NULL,
-        'image' => NULL
+        'image' => NULL,
+        'path' => drupal_get_path('module', 'ddb_cover_upload'),
       ),
       'template' => 'ddb-cover-upload-submitted',
       'path' => $path . '/templates/'

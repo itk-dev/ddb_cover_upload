@@ -16,7 +16,7 @@
  * @throws \DingProviderNoProvider
  *   No provider is configured for the given provider.
  */
-function _cover_upload_ting_reference_autocomplete(string $string) {
+function _cover_upload_search_autocomplete(string $string) {
   $matches = array();
 
   // Only use auto-complete if more that 3 chars have been written.

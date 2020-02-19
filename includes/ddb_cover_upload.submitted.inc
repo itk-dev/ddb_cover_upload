@@ -14,20 +14,20 @@
  */
 function ddb_cover_upload_submitted() {
   $data = _ddb_cover_upload_session('ddb_cover_upload_submitted');
-  $image = _ddb_cover_upload_fetch_submitted_image($data);
-  $file = file_load($data['fid']);
+  $image_url = file_create_url($data['image_uri']);
+
   return array(
     '#attached' => array (
       'css' => array(
         drupal_get_path('module', 'ddb_cover_upload') . '/css/ddb_cover_upload.admin.css',
       ),
       'js' => array(
-        drupal_get_path('module', 'ddb_cover_upload') . '/js/ddb_cover_upload_check_submission.js',
+        drupal_get_path('module', 'ddb_cover_upload') . '/js/ddb_cover_upload_check_submission.admin.js',
       ),
     ),
     '#markup' => theme('ddb_cover_upload_submitted', array(
       'data' => $data,
-      'image' => $file ? $image : NULL,
+      'image' => $image_url,
     ))
   );
 }
@@ -74,40 +74,11 @@ function _cover_upload_check_submission() {
 }
 
 /**
- * Fetch the image that was submitted. Either an altered version or original.
- *
- * @param array $data
- *   The ddb_cover_upload data from session.
- *
- * @return bool|string
- *   A URL to the image the user decided to upload.
- */
-function _ddb_cover_upload_fetch_submitted_image(array $data){
-  if ($data['image_altered']) {
-    return(file_create_url(file_build_uri('/upload_cover_service/' . $data['fid'] . '/' . $data['fid'] . '.jpg')));
-  }
-  else {
-    $uploaded = file_load($data['fid']);
-    return(file_create_url($uploaded->uri));
-  }
-}
-
-/**
  * Remove db entry and files locally.
  *
  * @param array $data
  *   The ddb_cover_upload data from session.
  */
 function _ddb_cover_upload_cleanup(array $data) {
-  $file = file_load($data['fid']);
-  if ($file) {
-    $public_uri = variable_get('file_public_path','sites/default/files');
-    if ($data['image_altered']) {
-      $alteredImageDir = $public_uri . '/upload_cover_service/' . $data['fid'];
-      file_unmanaged_delete($alteredImageDir . '/' . $data['fid'] . '.jpg');
-      drupal_rmdir($alteredImageDir);
-    }
 
-    file_delete(file_load($data['fid']));
-  }
 }
