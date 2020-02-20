@@ -54,13 +54,13 @@ function _ddb_cover_upload_form_steps() {
 function ddb_cover_upload_form(array $form, array &$form_state) {
   // Initialize a description of the steps for the wizard.
   if (empty($form_state['step'])) {
-    // Side effect here is that ´$form_state['step'] gets set.
-    _ddb_cover_upload_determine_step(drupal_get_query_parameters(), $form_state);
-
     // This array contains the function to be called at each step to get the
     // relevant form elements. It will also store state information for each
     // step.
     $form_state['step_information'] = _ddb_cover_upload_form_steps();
+
+    // Side effect here is that ´$form_state['step'] gets set.
+    _ddb_cover_upload_determine_step(drupal_get_query_parameters(), $form_state);
   }
 
   // Get current step.
