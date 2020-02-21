@@ -220,6 +220,39 @@ function ddb_cover_upload_image_upload_ajax() {
 }
 
 /**
+ * Implements hook_ding_entity_buttons().
+ *
+ * Add entity button to allow for faster upload of covers directly from a ting
+ * object view.
+ */
+function ddb_cover_upload_ding_entity_buttons($type, $entity, $view_mode, $widget = 'default') {
+  if ( user_access('upload cover') && $type == 'ding_entity') {
+    return array(
+      array(
+        '#theme' => 'link',
+        '#text' => t('Upload cover'),
+        '#path' => 'admin/config/cover_upload/upload',
+        '#options' => array(
+          'query' => array(
+            'pid' => $entity->id,
+          ),
+          'attributes' => array(
+            'class' => array(
+              'action-button',
+            ),
+            'data-local-id' => $entity->localId,
+          ),
+          'html' => FALSE,
+        ),
+        '#weight' => 10,
+      ),
+    );
+  }
+
+  return '';
+}
+
+/**
  * Store and retrieve variables from session.
  *
  * @param string $key
