@@ -34,42 +34,28 @@ function ddb_cover_upload_submitted() {
 
 /**
  * Check cover service to determine if file has been uploaded.
- *
- * This function is called continuously through ajax.
- * @todo Proper check against cover service. Currently just reports success after a while.
- *
- * @see ddb_cover_upload_check_submission.js
  */
 function _cover_upload_check_submission() {
   $data = _ddb_cover_upload_session('ddb_cover_upload_submitted');
-  $image = _ddb_cover_upload_fetch_submitted_image($data);
-  $state = array(
-    'status' => 'waiting',
-  );
 
-  // @todo remove this if/else condition when proper check is implemented.
-  if(empty(_ddb_cover_upload_session('ddb_cover_upload_time'))) {
-    // @todo remove this line when proper check is implemented.
-    _ddb_cover_upload_session('ddb_cover_upload_time', time());
+  try {
+    _ddb_cover_upload_client_upload($data['image_uri'], $data['pid'], 'pid');
   }
-  else {
-    // @todo remove this line when proper check is implemented.
-    $timepassed = time() - _ddb_cover_upload_session('ddb_cover_upload_time');
-    // If image is uploaded.
-    // @todo Change this line and implement a proper check.
-    if ($timepassed > 3) {
-      // Notify frontend
-      $state['status'] = 'success';
-      drupal_json_output($state);
-      // @todo remove this line when proper check is implemented.
-      unset($_SESSION['ddb_cover_upload_time']);
-      _ddb_cover_upload_cleanup($data);
-      drupal_exit();
-    }
+  catch (\CoverService\ApiException $e) {
+    // @TODO: handle exception
+    drupal_json_output(array(
+      'message' => $e->getMessage(),
+      'status' => 'error',
+    ));
+    drupal_exit();
   }
+
+  // @TODO clean up.
 
   // Notify frontend "Nothing to see yet".
-  drupal_json_output($state);
+  drupal_json_output($state = array(
+    'status' => 'success',
+  ));
   drupal_exit();
 }
 
@@ -81,4 +67,63 @@ function _cover_upload_check_submission() {
  */
 function _ddb_cover_upload_cleanup(array $data) {
 
+}
+
+/**
+ * Wrapper to upload a cover to the service.
+ *
+ * @param string $image_uri
+ *   The local URI for the cover image.
+ * @param string $identifier
+ *   The identifier for the material for the cover.
+ * @param string $identifier_type
+ *   The type of identifier (faust, pid, isbn).
+ *
+ * @throws \CoverService\ApiException
+ */
+function _ddb_cover_upload_client_upload(string $image_uri, string $identifier, string $identifier_type) {
+  require_once(__DIR__ . '/../vendor/autoload.php');
+
+  $image = drupal_realpath($image_uri);
+  $config = _ddb_cover_upload_client_config();
+  $apiInstance = new CoverService\Api\CoverApi(
+    new GuzzleHttp\Client(),
+    $config
+  );
+
+  /** @var \CoverService\Model\Cover $cover */
+  $cover = $apiInstance->postCoverCollection($image);
+
+  $material = new \CoverService\Model\MaterialWrite();
+  $material->setCover('/api/covers/'.$cover->getId());
+  $material->setIsType($identifier_type);
+  $material->setIsIdentifier($identifier);
+
+  $apiInstance = new CoverService\Api\MaterialApi(
+    new GuzzleHttp\Client(),
+    $config
+  );
+  $apiInstance->postMaterialCollection($material);
+}
+
+/**
+ * Helper to get configuration for the upload API.
+ *
+ * @return \CoverService\Configuration
+ *   API configuration.
+ *
+ * @throws \DingProviderDoesntImplement
+ * @throws \DingProviderNoProvider
+ */
+function _ddb_cover_upload_client_config() {
+  $config = CoverService\Configuration::getDefaultConfiguration();
+
+  // Set token from current session.
+  // @TODO: This would be for the user an not the site.
+  $token = ding_provider_invoke('openplatform_token', 'get');
+  $config->setAccessToken($token);
+
+  $config->setHost(variable_get('ddb_cover_upload_host', 'https://upload.cover.dandigbib.org'));
+
+  return $config;
 }

@@ -226,7 +226,7 @@ function ddb_cover_upload_image_upload_ajax() {
  * object view.
  */
 function ddb_cover_upload_ding_entity_buttons($type, $entity, $view_mode, $widget = 'default') {
-  if ( user_access('upload cover') && $type == 'ding_entity') {
+  if (user_access('upload cover') && $type == 'ding_entity') {
     return array(
       array(
         '#theme' => 'link',

@@ -1,40 +1,11 @@
 /**
  * @file
- * Perform continuous checks against cover service.
  */
 
 (function ($) {
+  'use strict';
+
   let uploadAnother = '#js-upload-another';
-  Drupal.behaviors.ddbCoverUpload = {
-    attach: function (context, settings) {
-      function checkSubmission() {
-        $.ajax({
-          type: 'get',
-          dataType : 'json',
-          url: '/admin/config/cover_upload/submitted/check-submission',
-          success: function(data) {
-            if (data.status === 'success') {
-              setCompletedState(uploadNewHref);
-            }
-          },
-          complete: function(data) {
-            var response = JSON.parse(data.responseText);
-            // Schedule the next request if we are still awaiting response.
-            if(response.status === 'waiting') {
-              setTimeout(checkSubmission, 1000);
-            }
-          }
-        });
-      }
-
-      // Start loop for continuous check against cover service.
-      checkSubmission();
-
-      // Store link url and disable link.
-      var uploadNewHref = $(uploadAnother).attr("href");
-      $(uploadAnother).removeAttr('href');
-    }
-  };
 
   /**
    * Change frontend to visualize that upload to cover service has finished.
@@ -48,4 +19,33 @@
     $('.js-spinner').hide();
     $('.js-confirmation').show();
   }
+
+  Drupal.behaviors.ddbCoverUpload = {
+    attach: function (context, settings) {
+      function checkSubmission() {
+        $.ajax({
+          type: 'get',
+          dataType : 'json',
+          url: '/admin/config/cover_upload/submitted/check-submission',
+          success: function(data) {
+            switch (data.status) {
+              case 'success':
+                setCompletedState(uploadNewHref);
+                break;
+
+              case 'warning':
+
+                break;
+            }
+          },
+        });
+      }
+
+      checkSubmission();
+
+      // Store link url and disable link.
+      var uploadNewHref = $(uploadAnother).attr("href");
+      $(uploadAnother).removeAttr('href');
+    }
+  };
 }(jQuery));
