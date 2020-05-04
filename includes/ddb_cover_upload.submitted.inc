@@ -41,7 +41,7 @@ function _cover_upload_check_submission() {
   try {
     _ddb_cover_upload_client_upload($data['image_uri'], $data['pid'], 'pid');
   }
-  catch (\CoverService\ApiException $e) {
+  catch (\CoverServiceUpload\ApiException $e) {
     // @TODO: handle exception
     drupal_json_output(array(
       'message' => $e->getMessage(),
@@ -79,27 +79,25 @@ function _ddb_cover_upload_cleanup(array $data) {
  * @param string $identifier_type
  *   The type of identifier (faust, pid, isbn).
  *
- * @throws \CoverService\ApiException
+ * @throws \CoverServiceUpload\ApiException
  */
 function _ddb_cover_upload_client_upload(string $image_uri, string $identifier, string $identifier_type) {
-  require_once(__DIR__ . '/../vendor/autoload.php');
-
   $image = drupal_realpath($image_uri);
   $config = _ddb_cover_upload_client_config();
-  $apiInstance = new CoverService\Api\CoverApi(
+  $apiInstance = new CoverServiceUpload\Api\CoverApi(
     new GuzzleHttp\Client(),
     $config
   );
 
-  /** @var \CoverService\Model\Cover $cover */
+  /** @var \CoverServiceUpload\Model\CoverCoverRead $cover */
   $cover = $apiInstance->postCoverCollection($image);
 
-  $material = new \CoverService\Model\MaterialWrite();
+  $material = new \CoverServiceUpload\Model\MaterialWrite();
   $material->setCover('/api/covers/'.$cover->getId());
   $material->setIsType($identifier_type);
   $material->setIsIdentifier($identifier);
 
-  $apiInstance = new CoverService\Api\MaterialApi(
+  $apiInstance = new CoverServiceUpload\Api\MaterialApi(
     new GuzzleHttp\Client(),
     $config
   );
@@ -109,17 +107,13 @@ function _ddb_cover_upload_client_upload(string $image_uri, string $identifier, 
 /**
  * Helper to get configuration for the upload API.
  *
- * @return \CoverService\Configuration
+ * @return \CoverServiceUpload\Configuration
  *   API configuration.
- *
- * @throws \DingProviderDoesntImplement
- * @throws \DingProviderNoProvider
  */
 function _ddb_cover_upload_client_config() {
-  $config = CoverService\Configuration::getDefaultConfiguration();
+  $config = CoverServiceUpload\Configuration::getDefaultConfiguration();
 
-  // Set token from current session.
-  // @TODO: This would be for the user an not the site.
+  // Get access token for the library.
   $token = _ddb_cover_upload_get_library_token();
   $config->setAccessToken($token);
 
