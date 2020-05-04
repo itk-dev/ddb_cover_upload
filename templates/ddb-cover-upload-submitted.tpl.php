@@ -34,6 +34,10 @@
           <p><a class="btn btn-primary disabled" id="js-upload-another" href="/admin/config/cover_upload/upload"><?php print t('Upload another'); ?></a></p>
         <?php endif; ?>
       </div>
+      <div class="js-error" style="display:none">
+        <h3><?php print t('Error - Your image was not uploaded'); ?></h3>
+        <p class="error"><?php print t('Unknown error happened') ?></p>
+      </div>
     </div>
   </div>
   <div class="border border-gray">

@@ -120,7 +120,7 @@ function _ddb_cover_upload_client_config() {
 
   // Set token from current session.
   // @TODO: This would be for the user an not the site.
-  $token = ding_provider_invoke('openplatform_token', 'get');
+  $token = _ddb_cover_upload_get_library_token();
   $config->setAccessToken($token);
 
   $config->setHost(variable_get('ddb_cover_upload_host', 'https://upload.cover.dandigbib.org'));

@@ -22,6 +22,10 @@
 
   Drupal.behaviors.ddbCoverUpload = {
     attach: function (context, settings) {
+      // Store link url and disable link.
+      let uploadNewHref = $(uploadAnother).attr("href");
+      $(uploadAnother).removeAttr('href');
+
       function checkSubmission() {
         $.ajax({
           type: 'get',
@@ -33,8 +37,11 @@
                 setCompletedState(uploadNewHref);
                 break;
 
-              case 'warning':
-
+              case 'error':
+                console.log(data);
+                $('.js-error .error').html(data.message);
+                $('.js-spinner').hide();
+                $('.js-error').show();
                 break;
             }
           },
@@ -42,10 +49,6 @@
       }
 
       checkSubmission();
-
-      // Store link url and disable link.
-      var uploadNewHref = $(uploadAnother).attr("href");
-      $(uploadAnother).removeAttr('href');
     }
   };
 }(jQuery));

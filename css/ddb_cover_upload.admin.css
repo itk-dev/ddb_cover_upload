@@ -4,6 +4,10 @@
  * This should only be added to cover upload specific pages.
  */
 
+.search-result .field-name-ding-entity-buttons {
+  display: none;
+}
+
 :root {
   --spacer: 1rem;
   --color-gray-100: #f5f5f5;
