@@ -284,28 +284,40 @@ function _ddb_cover_upload_session(string $key, $value = null) {
  *   Token for the library.
  */
 function _ddb_cover_upload_get_library_token() {
+  $token = &drupal_static(__FUNCTION__);
+  if (!isset($token)) {
+    $cache = cache_get('ddb_cover_upload_token');
+    if ($cache && $cache->expire > REQUEST_TIME) {
+      $token = $cache->data;
+    }
+    else {
+      $config = ding_adgangsplatformen_get_configuration();
+      $agency_id = variable_get('ting_agency', '');
 
-  $config = ding_adgangsplatformen_get_configuration();
-  $agency_id = variable_get('ting_agency', '');
-
-  $client = new \GuzzleHttp\Client();
-  $response = $client->request('POST', $config['urlAccessToken'], [
-    'form_params' => [
-      'grant_type' => 'password',
-      'username' => '@' . $agency_id,
-      'password' => '@' . $agency_id,
-    ],
-    'auth' => [
-      $config['clientId'],
-      $config['clientSecret'],
-    ],
-  ]);
+      $client = new \GuzzleHttp\Client();
+      $response = $client->request('POST', $config['urlAccessToken'], [
+        'form_params' => [
+          'grant_type' => 'password',
+          'username' => '@' . $agency_id,
+          'password' => '@' . $agency_id,
+        ],
+        'auth' => [
+          $config['clientId'],
+          $config['clientSecret'],
+        ],
+      ]);
 
 
-  $content = $response->getBody()->getContents();
-  $json = json_decode($content, true);
+      $content = $response->getBody()->getContents();
+      $json = json_decode($content, true);
 
-  $expire = $json['expires_in'];
+      $token = $json['access_token'];
 
-  return $json['access_token'];
+      // Get token expire - one day.
+      $expire = REQUEST_TIME + ($json['expires_in'] - 86400);
+      cache_set('ddb_cover_upload_token', $token, 'cache', $expire);
+    }
+  }
+
+  return $token;
 }
