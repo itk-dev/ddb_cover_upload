@@ -38,11 +38,19 @@ function ddb_cover_upload_submitted() {
 function _cover_upload_check_submission() {
   $data = _ddb_cover_upload_session('ddb_cover_upload_submitted');
 
+  // Check if the minimum required data exists.
+  if (!isset($data['image_uri']) || !isset($data['pid'])) {
+    drupal_json_output(array(
+      'message' => t('Either the image have been uploaded ot something is wrong with the session'),
+      'status' => 'error',
+    ));
+    drupal_exit();
+  }
+
   try {
     _ddb_cover_upload_client_upload($data['image_uri'], $data['pid'], 'pid');
   }
   catch (\CoverServiceUpload\ApiException $e) {
-    // @TODO: handle exception
     drupal_json_output(array(
       'message' => $e->getMessage(),
       'status' => 'error',
@@ -50,7 +58,9 @@ function _cover_upload_check_submission() {
     drupal_exit();
   }
 
-  // @TODO clean up.
+  // If we get here the image should have been upload and we clean up the local
+  // installation.
+  _ddb_cover_upload_cleanup();
 
   // Notify frontend "Nothing to see yet".
   drupal_json_output($state = array(
@@ -61,12 +71,15 @@ function _cover_upload_check_submission() {
 
 /**
  * Remove db entry and files locally.
- *
- * @param array $data
- *   The ddb_cover_upload data from session.
  */
-function _ddb_cover_upload_cleanup(array $data) {
+function _ddb_cover_upload_cleanup() {
+  $data = _ddb_cover_upload_session('ddb_cover_upload_submitted');
 
+  // Mark image as upload to prevent more uploads of the same data.
+  _ddb_cover_upload_session('ddb_cover_upload_submitted', '');
+
+  // Remove local copy of the image.
+  file_unmanaged_delete($data['image_uri']);
 }
 
 /**

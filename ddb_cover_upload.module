@@ -272,6 +272,8 @@ function _ddb_cover_upload_session(string $key, $value = null) {
   if (isset($_SESSION[$key])) {
     return $_SESSION[$key];
   }
+
+  return NULL;
 }
 
 /**
@@ -282,6 +284,8 @@ function _ddb_cover_upload_session(string $key, $value = null) {
  *
  * @return string
  *   Token for the library.
+ *
+ * @throws \GuzzleHttp\Exception\GuzzleException
  */
 function _ddb_cover_upload_get_library_token() {
   $token = &drupal_static(__FUNCTION__);
@@ -306,7 +310,6 @@ function _ddb_cover_upload_get_library_token() {
           $config['clientSecret'],
         ],
       ]);
-
 
       $content = $response->getBody()->getContents();
       $json = json_decode($content, true);
