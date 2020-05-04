@@ -24,7 +24,7 @@ function ddb_cover_upload_settings_form(array $form, array $form_state) {
   $form['settings']['ddb_cover_upload_host'] = array(
     '#type' => 'textfield',
     '#title' => t('Upload service end-point'),
-    '#value' => variable_get('ddb_cover_upload_host', 'https://upload.cover.dandigbib.org'),
+    '#default_value' => variable_get('ddb_cover_upload_host', 'https://upload.cover.dandigbib.org'),
     '#required' => TRUE,
   );
 
