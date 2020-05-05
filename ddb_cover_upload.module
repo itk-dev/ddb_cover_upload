@@ -89,6 +89,16 @@ function ddb_cover_upload_menu() {
     'file path' => $path,
   );
 
+  $items['admin/config/cover_upload/upload/list/delete/%'] = array(
+    'title' => 'Delete cover',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ddb_cover_upload_delete', 6),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('upload cover'),
+    'file' => 'ddb_cover_upload.uploaded_list.inc',
+    'file path' => $path,
+  );
+
   $items['admin/config/cover_upload/upload/settings'] = array(
     'title' => 'Cover upload settings',
     'page callback' => 'drupal_get_form',

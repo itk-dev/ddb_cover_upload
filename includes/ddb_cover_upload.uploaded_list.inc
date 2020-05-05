@@ -13,13 +13,9 @@
  *   Theme exception error.
  */
 function ddb_cover_upload_list() {
-
-  // @TODO pager on tables?
-
   $rows = array();
 
   $materials = _ddb_cover_upload_get_materials();
-
   foreach ($materials as $material) {
     $cover_ref = $material->getCover();
     $id = _ddb_cover_upload_parse_cover_id($cover_ref);
@@ -43,7 +39,6 @@ function ddb_cover_upload_list() {
     ];
   }
 
-  // @todo get list of uploaded covers.
   drupal_set_title(t('List uploaded covers'));
   $header = array(
     t('Id'),
@@ -61,11 +56,61 @@ function ddb_cover_upload_list() {
   );
 }
 
+
+/**
+ * Menu callback for deleting an uploaded cover.
+ */
+function ddb_cover_upload_delete($form, &$form_state, $id) {
+  $form['material_id'] = array(
+    '#type' => 'value',
+    '#value' => $id,
+  );
+
+  return confirm_form(
+    $form,
+    t('Are you sure you want to delete this item?'),
+    'admin/config/cover_upload/upload/list',
+    t('This action cannot be undone.'),
+    t('Delete'),
+    t('Cancel')
+  );
+}
+
+/**
+ * Confirm form submit handler for delete above.
+ */
+function ddb_cover_upload_delete_submit($form, &$form_state) {
+  if (isset($form_state['values']['material_id'])) {
+    _ddb_cover_upload_delete_material($form_state['values']['material_id']);
+  }
+
+  drupal_set_message(t('The material have been deleted. It might take sometime before it is delete in all systems.'));
+  $form_state['redirect'] = 'admin/config/cover_upload/upload/list';
+}
+
+/**
+ * Parse cover IIR to get cover Id.
+ *
+ * @param $ref
+ *   The IIR ref.
+ *
+ * @return string
+ */
 function _ddb_cover_upload_parse_cover_id($ref) {
   $parts = explode('/', $ref);
   return array_pop($parts);
 }
 
+/**
+ * Get materials from the service.
+ *
+ * @param int $page
+ *   The page to use.
+ *
+ * @return \CoverServiceUpload\Model\MaterialRead[]
+ * @throws \CoverServiceUpload\ApiException
+ * @throws \GuzzleHttp\Exception\GuzzleException
+ */
 function _ddb_cover_upload_get_materials($page = 1) {
   // @TODO: cache
   $config = ddb_cover_upload_client_config();
@@ -77,6 +122,18 @@ function _ddb_cover_upload_get_materials($page = 1) {
   return $apiInstance->getMaterialCollection($page);
 }
 
+/**
+ * Get cover base on id.
+ *
+ * @param $id
+ *   The id of the cover to get.
+ *
+ * @return \CoverServiceUpload\Model\CoverCoverRead
+ *   The cover to fetch.
+ *
+ * @throws \CoverServiceUpload\ApiException
+ * @throws \GuzzleHttp\Exception\GuzzleException
+ */
 function _ddb_cover_upload_get_cover($id) {
   // @TODO: cache
   $config = ddb_cover_upload_client_config();
@@ -86,4 +143,23 @@ function _ddb_cover_upload_get_cover($id) {
   );
 
   return $apiInstance->getCoverItem($id);
+}
+
+/**
+ * Delete material.
+ *
+ * @param $id
+ *   The id of the material to delete.
+ *
+ * @throws \CoverServiceUpload\ApiException
+ * @throws \GuzzleHttp\Exception\GuzzleException
+ */
+function _ddb_cover_upload_delete_material($id) {
+  $config = ddb_cover_upload_client_config();
+  $apiInstance = new CoverServiceUpload\Api\MaterialApi(
+    new GuzzleHttp\Client(),
+    $config
+  );
+
+  $apiInstance->deleteMaterialItem($id);
 }
