@@ -5,41 +5,21 @@
  */
 
 /**
- * Display cover submitted page.
- *
- * @return array
- *   A themed page.
- * @throws \Exception
- *   Theme exception error.
- */
-function ddb_cover_upload_submitted() {
-  $data = _ddb_cover_upload_session('ddb_cover_upload_submitted');
-  $image_url = file_create_url($data['image_uri']);
-
-  return array(
-    '#attached' => array (
-      'css' => array(
-        drupal_get_path('module', 'ddb_cover_upload') . '/css/ddb_cover_upload.admin.css',
-      ),
-      'js' => array(
-        drupal_get_path('module', 'ddb_cover_upload') . '/js/ddb_cover_upload_check_submission.admin.js',
-      ),
-    ),
-    '#markup' => theme('ddb_cover_upload_submitted', array(
-      'data' => $data,
-      'image' => $image_url,
-    ))
-  );
-}
-
-/**
  * Check cover service to determine if file has been uploaded.
+ *
+ * Ajax callback function.
  */
 function _cover_upload_check_submission() {
   $data = _ddb_cover_upload_session('ddb_cover_upload_submitted');
 
+  // Validation to prevent page re-load submit and upload.
+  $exists = FALSE;
+  if (isset($data['image_uri'])) {
+    $exists = file_exists(drupal_realpath($data['image_uri']));
+  }
+
   // Check if the minimum required data exists.
-  if (!isset($data['image_uri']) || !isset($data['pid'])) {
+  if (!$exists || !isset($data['image_uri']) || !isset($data['pid'])) {
     drupal_json_output(array(
       'message' => t('Either the image have been uploaded ot something is wrong with the session'),
       'status' => 'error',
@@ -93,16 +73,15 @@ function _ddb_cover_upload_cleanup() {
  *   The type of identifier (faust, pid, isbn).
  *
  * @throws \CoverServiceUpload\ApiException
+ * @throws \GuzzleHttp\Exception\GuzzleException
  */
 function _ddb_cover_upload_client_upload(string $image_uri, string $identifier, string $identifier_type) {
   $image = drupal_realpath($image_uri);
-  $config = _ddb_cover_upload_client_config();
+  $config = ddb_cover_upload_client_config();
   $apiInstance = new CoverServiceUpload\Api\CoverApi(
     new GuzzleHttp\Client(),
     $config
   );
-
-  /** @var \CoverServiceUpload\Model\CoverCoverRead $cover */
   $cover = $apiInstance->postCoverCollection($image);
 
   $material = new \CoverServiceUpload\Model\MaterialWrite();
@@ -115,22 +94,4 @@ function _ddb_cover_upload_client_upload(string $image_uri, string $identifier, 
     $config
   );
   $apiInstance->postMaterialCollection($material);
-}
-
-/**
- * Helper to get configuration for the upload API.
- *
- * @return \CoverServiceUpload\Configuration
- *   API configuration.
- */
-function _ddb_cover_upload_client_config() {
-  $config = CoverServiceUpload\Configuration::getDefaultConfiguration();
-
-  // Get access token for the library.
-  $token = _ddb_cover_upload_get_library_token();
-  $config->setAccessToken($token);
-
-  $config->setHost(variable_get('ddb_cover_upload_host', 'https://upload.cover.dandigbib.org'));
-
-  return $config;
 }

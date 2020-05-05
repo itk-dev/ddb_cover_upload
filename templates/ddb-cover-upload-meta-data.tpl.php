@@ -11,7 +11,7 @@
 <div>
   <h3><?php print t('Material information');?></h3>
   <div class="content">
-    <?php if(!empty($material)) : ?>
+    <?php if (!empty($material)) : ?>
       <div class="field field-label-inline">
         <div class="field-label"><?php print t('Post id') . ':';?>&nbsp;</div>
         <div><?php print $material->getId(); ?></div>

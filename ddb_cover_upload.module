@@ -8,6 +8,7 @@ define('DDB_COVER_UPLOAD_STEP1', 0);
 define('DDB_COVER_UPLOAD_STEP2', 1);
 define('DDB_COVER_UPLOAD_STEP3', 2);
 define('DDB_COVER_UPLOAD_STEP4', 3);
+define('DDB_COVER_UPLOAD_STEP5', 4);
 define('DDB_COVER_UPLOAD_FILE_PATH', 'ddb_cover_upload_uploaded');
 
 /**
@@ -274,6 +275,26 @@ function _ddb_cover_upload_session(string $key, $value = null) {
   }
 
   return NULL;
+}
+
+/**
+ * Helper to get configuration for the upload API.
+ *
+ * @return \CoverServiceUpload\Configuration
+ *   API configuration.
+ *
+ * @throws \GuzzleHttp\Exception\GuzzleException
+ */
+function ddb_cover_upload_client_config() {
+  $config = CoverServiceUpload\Configuration::getDefaultConfiguration();
+
+  // Get access token for the library.
+  $token = _ddb_cover_upload_get_library_token();
+  $config->setAccessToken($token);
+
+  $config->setHost(variable_get('ddb_cover_upload_host', 'https://upload.cover.dandigbib.org'));
+
+  return $config;
 }
 
 /**

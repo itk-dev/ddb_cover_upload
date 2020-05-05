@@ -28,6 +28,10 @@ function _ddb_cover_upload_form_steps() {
       'form' => 'ddb_cover_upload_meta',
       'step_title' => t('Verify image')
     ),
+    DDB_COVER_UPLOAD_STEP5 => array(
+      'form' => 'ddb_cover_upload_client_upload',
+      'step_title' => t('Upload image')
+    ),
   );
 }
 
@@ -72,7 +76,7 @@ function ddb_cover_upload_form(array $form, array &$form_state) {
   // We use #limit_validation_errors to skip all complaints about validation
   // when using the back button. The values entered will be discarded, but they
   // will not be validated, which would be annoying in a "back" button.
-  if ($step > DDB_COVER_UPLOAD_STEP2) {
+  if ($step > DDB_COVER_UPLOAD_STEP2 && $step !== DDB_COVER_UPLOAD_STEP5) {
     $form['prev'] = array(
       '#type' => 'submit',
       '#value' => t('Previous'),
@@ -84,7 +88,7 @@ function ddb_cover_upload_form(array $form, array &$form_state) {
   }
 
   // Show the Next button only if there are more steps defined.
-  if ($step < DDB_COVER_UPLOAD_STEP4) {
+  if ($step < DDB_COVER_UPLOAD_STEP5) {
     $form['next'] = array(
       '#type' => 'submit',
       '#value' => t('Next'),
@@ -98,13 +102,6 @@ function ddb_cover_upload_form(array $form, array &$form_state) {
     if (!is_null($func) && function_exists($func)) {
       $form['next']['#validate'] = array($func);
     }
-  }
-  else {
-    $form['finish'] = array(
-      '#type' => 'submit',
-      '#value' => t('Upload image to cover service'),
-      '#weight' => 80,
-    );
   }
 
   // Attach global assets to the form.
@@ -402,6 +399,66 @@ function ddb_cover_upload_meta(array $form, array &$form_state) {
 }
 
 /**
+ * Display cover submitted page.
+ *
+ * @param array $form
+ *   The form array.
+ * @param array $form_state
+ *   The state of the form.
+ *
+ * @return array
+ *   The form for image upload.
+ *
+ * @throws \Exception
+ *   Theme exception error.
+ */
+function ddb_cover_upload_client_upload(array $form, array &$form_state) {
+  // Store data in current session for ajax upload.
+  if (isset($form_state['step_information'])) {
+    $data = array(
+      'pid' => $form_state['step_information'][DDB_COVER_UPLOAD_STEP2]['stored_values']['ddb_cover_upload_material'],
+      'image_uri' => $form_state['step_information'][DDB_COVER_UPLOAD_STEP3]['stored_values']['image_file'],
+      'accreditation' => $form_state['input']['ddb_cover_upload_meta_input'],
+      'agency' => variable_get('ting_agency', ''),
+    );
+    _ddb_cover_upload_session('ddb_cover_upload_submitted', $data);
+  }
+
+  // Remove form step_information values to prevent re-submit of the data.
+  unset($form_state['step_information']);
+
+  $form['ddb_cover_upload_client_upload'] = [
+    '#type' => 'container',
+    '#attributes' => [
+      'class' => ['wrapper', 'admin', 'clearfix']
+    ],
+  ];
+
+  $image_url = '';
+  if (isset($data['image_uri']) && file_exists(drupal_realpath($data['image_uri']))) {
+    $image_url = file_create_url($data['image_uri']);
+  }
+
+  $form['ddb_cover_upload_client_upload']['#attached'] = array (
+    'css' => array(
+      drupal_get_path('module', 'ddb_cover_upload') . '/css/ddb_cover_upload.admin.css',
+    ),
+    'js' => array(
+      drupal_get_path('module', 'ddb_cover_upload') . '/js/ddb_cover_upload_check_submission.admin.js',
+    ),
+  );
+
+  $form['ddb_cover_upload_client_upload']['content'] = array(
+    '#markup' => theme('ddb_cover_upload_submitted', array(
+      'data' => $data,
+      'image' => $image_url,
+    ))
+  );
+
+  return $form;
+}
+
+/**
  * Submit handler for the "previous" button.
  *
  * This function:
@@ -462,32 +519,6 @@ function ddb_cover_upload_next_submit(array $form, array &$form_state) {
     // Force rebuild with next step.
     $form_state['rebuild'] = TRUE;
   }
-}
-
-/**
- * Multi step form submit handler for cover upload.
- *
- * @param array $form
- *   The form element.
- * @param array $form_state
- *   The state of the form.
- *
- * @throws \Exception
- *   Watchdog exception error.
- */
-function ddb_cover_upload_form_submit(array $form, array &$form_state) {
-  $current_step = $form_state['step'];
-  $form_state['step_information'][$current_step]['stored_values'] = $form_state['values'];
-  $form_state['redirect'] = '/admin/config/cover_upload/upload/submitted';
-
-  $image_data = array(
-    'pid' => $form_state['step_information'][DDB_COVER_UPLOAD_STEP2]['stored_values']['ddb_cover_upload_material'],
-    'image_uri' => $form_state['step_information'][DDB_COVER_UPLOAD_STEP3]['stored_values']['image_file'],
-    'accreditation' => $form_state['input']['ddb_cover_upload_meta_input'],
-    'agency' => variable_get('ting_agency', ''),
-  );
-
-  _ddb_cover_upload_session('ddb_cover_upload_submitted', $image_data);
 }
 
 /**

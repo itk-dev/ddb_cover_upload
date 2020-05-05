@@ -11,7 +11,7 @@
 <div class="container">
   <div class="row">
     <div class="col-12 center">
-      <?php if($image) : ?>
+      <?php if ($image) : ?>
         <img class="img-submitted" src="<?php print $image; ?>">
       <?php endif; ?>
       <div class="js-spinner">
@@ -21,7 +21,7 @@
         <h3><?php print t('Sending image to cover service - Please wait a moment');?></h3>
       </div>
       <div class="js-confirmation" style="display:none">
-        <?php if($image) : ?>
+        <?php if ($image) : ?>
           <div class="success">
             <?php print file_get_contents($path . '/images/check.svg'); ?>
           </div>
