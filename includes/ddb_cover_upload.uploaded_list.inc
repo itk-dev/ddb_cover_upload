@@ -24,11 +24,22 @@ function ddb_cover_upload_list() {
     $cover_ref = $material->getCover();
     $id = _ddb_cover_upload_parse_cover_id($cover_ref);
     $cover = _ddb_cover_upload_get_cover($id);
+    $image = array(
+      '#theme' => 'image',
+      '#path' => $cover->getImageUrl(),
+      '#width' => '120px',
+    );
+
+    /** @var \Ting\TingObject $object */
+    $object = ding_entity_load($material->getIsIdentifier(), 'ting_object');
+    $uri = ding_entity_uri('ding_entity', $object);
 
     $rows[] = [
       $material->getId(),
-      $cover->getImageUrl(),
-      $material->getIsIdentifier(),
+      render($image),
+      $object->getTitle() . ' (' . $object->getType() .')',
+      l($material->getIsIdentifier(), $uri['path'], array('html' => TRUE)),
+      l(t('Delete'), 'admin/config/cover_upload/upload/list/delete/' . $material->getId(), array('html' => TRUE)),
     ];
   }
 
@@ -37,6 +48,7 @@ function ddb_cover_upload_list() {
   $header = array(
     t('Id'),
     t('Image'),
+    t('Title'),
     t('Material'),
     t('Actions')
   );
