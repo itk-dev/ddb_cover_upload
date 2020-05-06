@@ -216,6 +216,8 @@ function ddb_cover_upload_image_upload_ajax() {
     $filename = $is . '.' . $type;
     $uri = 'public://' . DDB_COVER_UPLOAD_FILE_PATH;
 
+    file_prepare_directory($uri, FILE_CREATE_DIRECTORY);
+
     $file = file_unmanaged_save_data($data, $uri . '/' . $filename, FILE_EXISTS_REPLACE);
     if ($file === FALSE) {
       $error = t('Failed to save file to the server.');

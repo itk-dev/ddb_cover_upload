@@ -9,17 +9,16 @@
  *
  * @return array
  *   A themed list.
- * @throws \Exception
- *   Theme exception error.
+ *
+ * @throws \CoverServiceUpload\ApiException
+ * @throws \GuzzleHttp\Exception\GuzzleException
  */
 function ddb_cover_upload_list() {
   $rows = array();
 
   $materials = _ddb_cover_upload_get_materials();
   foreach ($materials as $material) {
-    $cover_ref = $material->getCover();
-    $id = _ddb_cover_upload_parse_cover_id($cover_ref);
-    $cover = _ddb_cover_upload_get_cover($id);
+    $cover = $material->getCover();
     $image = array(
       '#theme' => 'image',
       '#path' => $cover->getImageUrl(),
@@ -92,29 +91,13 @@ function ddb_cover_upload_delete_submit($form, &$form_state) {
 }
 
 /**
- * Parse cover IIR to get cover Id.
- *
- * @param $ref
- *   The IIR ref.
- *
- * @return string
- */
-function _ddb_cover_upload_parse_cover_id($ref) {
-  $parts = explode('/', $ref);
-  return array_pop($parts);
-}
-
-/**
  * Get materials from the service.
- *
- * @param int $page
- *   The page to use.
  *
  * @return \CoverServiceUpload\Model\MaterialRead[]
  * @throws \CoverServiceUpload\ApiException
  * @throws \GuzzleHttp\Exception\GuzzleException
  */
-function _ddb_cover_upload_get_materials($page = 1) {
+function _ddb_cover_upload_get_materials() {
   $materials = &drupal_static(__FUNCTION__);
   if (!isset($materials)) {
     $cache = cache_get('ddb_cover_upload_materials');
@@ -128,7 +111,7 @@ function _ddb_cover_upload_get_materials($page = 1) {
         $config
       );
 
-      $materials = $apiInstance->getMaterialCollection($page);
+      $materials = $apiInstance->getMaterialCollection();
 
       // Expire after one day (will be cleared after uploading new covers).
       $expire = REQUEST_TIME + 86400;
@@ -137,29 +120,6 @@ function _ddb_cover_upload_get_materials($page = 1) {
   }
 
   return $materials;
-}
-
-/**
- * Get cover base on id.
- *
- * @param $id
- *   The id of the cover to get.
- *
- * @return \CoverServiceUpload\Model\CoverCoverRead
- *   The cover to fetch.
- *
- * @throws \CoverServiceUpload\ApiException
- * @throws \GuzzleHttp\Exception\GuzzleException
- */
-function _ddb_cover_upload_get_cover($id) {
-  // @TODO: cache
-  $config = ddb_cover_upload_client_config();
-  $apiInstance = new CoverServiceUpload\Api\CoverApi(
-    new GuzzleHttp\Client(),
-    $config
-  );
-
-  return $apiInstance->getCoverItem($id);
 }
 
 /**
