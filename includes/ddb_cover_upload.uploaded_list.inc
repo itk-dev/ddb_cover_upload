@@ -82,6 +82,9 @@ function ddb_cover_upload_delete($form, &$form_state, $id) {
 function ddb_cover_upload_delete_submit($form, &$form_state) {
   if (isset($form_state['values']['material_id'])) {
     _ddb_cover_upload_delete_material($form_state['values']['material_id']);
+
+    // Clear cover and materials cache.
+    cache_clear_all('ddb_cover_upload', 'cache', TRUE);
   }
 
   drupal_set_message(t('The material have been deleted. It might take sometime before it is delete in all systems.'));
@@ -112,14 +115,28 @@ function _ddb_cover_upload_parse_cover_id($ref) {
  * @throws \GuzzleHttp\Exception\GuzzleException
  */
 function _ddb_cover_upload_get_materials($page = 1) {
-  // @TODO: cache
-  $config = ddb_cover_upload_client_config();
-  $apiInstance = new CoverServiceUpload\Api\MaterialApi(
-    new GuzzleHttp\Client(),
-    $config
-  );
+  $materials = &drupal_static(__FUNCTION__);
+  if (!isset($materials)) {
+    $cache = cache_get('ddb_cover_upload_materials');
+    if ($cache && $cache->expire > REQUEST_TIME) {
+      $materials = $cache->data;
+    }
+    else {
+      $config = ddb_cover_upload_client_config();
+      $apiInstance = new CoverServiceUpload\Api\MaterialApi(
+        new GuzzleHttp\Client(),
+        $config
+      );
 
-  return $apiInstance->getMaterialCollection($page);
+      $materials = $apiInstance->getMaterialCollection($page);
+
+      // Expire after one day (will be cleared after uploading new covers).
+      $expire = REQUEST_TIME + 86400;
+      cache_set('ddb_cover_upload_materials', $materials, 'cache', $expire);
+    }
+  }
+
+  return $materials;
 }
 
 /**

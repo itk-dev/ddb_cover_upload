@@ -29,6 +29,9 @@ function _cover_upload_check_submission() {
 
   try {
     _ddb_cover_upload_client_upload($data['image_uri'], $data['pid'], 'pid');
+
+    // Clear cover and materials cache.
+    cache_clear_all('ddb_cover_upload', 'cache', TRUE);
   }
   catch (\CoverServiceUpload\ApiException $e) {
     drupal_json_output(array(
